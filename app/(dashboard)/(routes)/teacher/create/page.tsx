@@ -27,9 +27,7 @@ const formSchema = z.object({
 });
 
 const CretePage = () => {
-  const [courses, setCourses] = useState([])
   const router = useRouter();
-  const [err, setErr] = useState(null);
  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,6 +42,7 @@ const CretePage = () => {
     try {
       const res = await axios.post('/api/course', values);
       toast.success("Successful created course" + ": " + res.data.title)
+      router.push("/teacher/courses/"+ res.data._id)
     } catch (err)
     {
       toast.error(err.response.data)

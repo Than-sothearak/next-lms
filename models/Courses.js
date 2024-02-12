@@ -4,7 +4,7 @@ import { Category } from "./Category";
 const CourseSchema = new Schema({
   title: { type: String, required: true },
   userId: { type: String },
-  discription: {type: String},
+  description: {type: String},
   images: [{ type: String }],
   price: { type: Number},
   isPublic: {
