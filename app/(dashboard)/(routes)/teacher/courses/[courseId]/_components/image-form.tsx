@@ -5,14 +5,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
-
-import { Button } from "@/components/ui/button";
-import { ImageIcon, Pencil, PlusCircle, Upload } from "lucide-react";
+import { ImageIcon, Pencil, PlusCircle, Target, Upload } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 import Image from "next/image";
-
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 const formSchema = z.object({
   imageUrl: z.string().min(2, {
     message: "image is required",
@@ -26,16 +33,19 @@ interface ImageFormProps {
   courseId: string;
 }
 
-export const ImageForm = ({ initialData, courseId, }: ImageFormProps) => {
-  const [isEidting, setIsEditing] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+interface Image {
+  url: string;
+}
 
+export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
+  const [isEidting, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [file, setFile] = useState<any>(null);
+  const [images, setImages] = useState<Image>();
   const router = useRouter();
   const toggleEdit = () => {
     setIsEditing((editing) => !editing);
   };
-
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,18 +53,54 @@ export const ImageForm = ({ initialData, courseId, }: ImageFormProps) => {
       imageUrl: initialData?.imageUrl || "",
     },
   });
-
+  
   const { isSubmitting, isValid } = form.formState;
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    
     try {
-      await axios.patch(`/api/course/${courseId}`, values);
+      const res = await axios.post(`/api/uploadimage/`, formData);
+      setImages(res.data.link)
+      // await axios.patch(`/api/course/${courseId}`, values);
+      console.log(values)
       toast.success("Course updated");
       toggleEdit();
       router.refresh();
     } catch {
       toast.error("Someting went wrong!");
+      setUploading(false);
     }
+  }
+
+  async function handleOnSubmit(e: React.SyntheticEvent) {
+    e.preventDefault();
+    
+    if (!file) return;
+    setUploading(true);
+   
+    const formData = new FormData();
+    formData.append("file", file);
+    const img = images || "";
+
+    try {
+      const res = await axios.post(`/api/uploadimage/`, formData);
+      setImages(res.data.link)
+      // await axios.patch(`/api/course/${courseId}`, img);
+ 
+      toast.success("Course updated");
+      setUploading(false);
+    } catch (error) { 
+      toast.error("Image not send!");
+      setUploading(false);
+    }
+  }
+
+  function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+      setFile(e.currentTarget.files?.[0]);
   }
 
   return (
@@ -81,7 +127,7 @@ export const ImageForm = ({ initialData, courseId, }: ImageFormProps) => {
       {!isEidting &&
         (!initialData.imageUrl ? (
           <div className="flex items-center justify-center h-60 bg-slate-200 rounded-md">
-            <ImageIcon className="h-1 w-10 text-slate-50" />
+            <ImageIcon className="h-10 w-10 text-slate-500" />
           </div>
         ) : (
           <div className="relative aspect-video mt-2">
@@ -94,20 +140,52 @@ export const ImageForm = ({ initialData, courseId, }: ImageFormProps) => {
           </div>
         ))}
       {isEidting && (
-        <div className="h-full bg-slate-100 p-4 border-2">
-          <div className="text-xs text-center text-muted-foreground justify-center items-center">
-            <div className="h-60 flex flex-col justify-around items-center">
-           
-                <Upload className="size-28"/>
-               
-              <p>16:0 aspect ratio recommend</p>
-            </div>
+        //   <Form {...form}>
+        //   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+        //     <FormField
+        //       control={form.control}
+        //       name="imageUrl"
+        //       render={({ field }) => (
+        //         <FormItem className="flex justify-center items-center border-4 h-60 rounded-md border-dotted">
+        //           <FormControl>
+        //             <Input
+        //               type="file"
+        //               placeholder="e.g. 'Computer science' "
+        //               disabled={isSubmitting}
+        //               {...field}
+        //             />
+        //           </FormControl>
+        //           <FormDescription>
+        //             This is your public display name.
+        //           </FormDescription>
+        //           <FormMessage />
+        //         </FormItem>
+        //       )}
+        //     />
+        //     <div className="flex gap-x-2">
+        //       <Button type="submit" disabled={!isValid || isSubmitting}>
+        //         Save
+        //       </Button>
+        //     </div>
+        //   </form>
+        // </Form>
+        <form onSubmit={handleOnSubmit}>
+          <div className="flex justify-center items-center border-4 h-60 rounded-md border-dotted">
+            <h2 className="text-blue-500">Drang and drop file here</h2>
+            <input
+              onChange={handleOnChange}
+              type="file"
+              name="image"
+              accept="image/*" 
+            />
           </div>
-        
-          <Button>
-            Upload
-          </Button>
-        </div>
+          <div className="text-xs text-muted-foreground mt-4">
+            <p>16:0 aspect ratio recommend</p>
+          </div>
+          <button type="submit" disabled={!file}>
+          {uploading ? "Uploading..." : "Upload"}
+        </button>
+        </form>
       )}
     </div>
   );

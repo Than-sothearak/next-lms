@@ -5,7 +5,7 @@ const CourseSchema = new Schema({
   title: { type: String, required: true },
   userId: { type: String },
   description: {type: String},
-  images: [{ type: String }],
+  imageUrl: { type: String },
   price: { type: Number},
   isPublic: {
     type: Boolean,
