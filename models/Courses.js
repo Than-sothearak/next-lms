@@ -1,5 +1,4 @@
 import mongoose, { model, Schema, models } from "mongoose";
-import { Category } from "./Category";
 
 const CourseSchema = new Schema({
   title: { type: String, required: true },
@@ -11,7 +10,7 @@ const CourseSchema = new Schema({
     type: Boolean,
     default: false
 },
-  category: {type:mongoose.Types.ObjectId, ref: Category},
+  categoryId: {type:mongoose.Types.ObjectId, ref: 'Category'},
   attachment: [{type:String}],
 
 }, {

@@ -150,12 +150,12 @@ export const ImageForm = ({ initialData, imageuploadId }: ImageFormProps) => {
         <form onSubmit={handleOnSubmit}>
           <label className="flex flex-col justify-center items-center border-4 h-60 rounded-md border-dotted cursor-pointer">
             {images && (
-                <div>
+                <div className="relative">
                 <Image
-                height={240}
-                width={240}
+                height={180}
+                width={180}
                   alt="Uplaod"
-                  className="object-cover rounded-md mb-5"
+                  className="object-cover rounded-md mb-2"
                   src={images}
                 />
               </div>
