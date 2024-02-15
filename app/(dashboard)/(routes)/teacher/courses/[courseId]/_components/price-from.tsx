@@ -11,6 +11,7 @@ import {
   FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -18,23 +19,23 @@ import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Textarea } from "@/components/ui/textarea";
+import { formatPrice } from "@/lib/format";
 
 const formSchema = z.object({
-  description: z.string().min(2, {
-    message: "description is required",
+  price: z.string().min(2, {
+    message: "price is required",
   }),
 });
 
-interface DesciptionFormProps {
+interface PriceFormProps {
   initialData: {
-    description: string
+    price: number
   };
     courseId: string;
   };
   
 
-export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) => {
+export const PriceForm = ({ initialData, courseId}: PriceFormProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const router = useRouter();
   const toggleEdit = () => {
@@ -44,7 +45,7 @@ export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) =>
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      description: initialData?.description || "",
+      price: initialData?.price?.toString() || undefined,
     },
   });
 
@@ -53,7 +54,7 @@ export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) =>
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
      await axios.patch(`/api/course/${courseId}`, values)
-     toast.success("Course updated");
+     toast.success("Price updated");
      toggleEdit();
      router.refresh();
     } catch (error){
@@ -64,14 +65,14 @@ export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) =>
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Course description
+        Course price
         <Button variant="ghost" onClick={toggleEdit}>
           {isEidting ? (
             <>Cancel</>
           ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit description
+              Edit price
             </>
           )}
         </Button>
@@ -79,9 +80,13 @@ export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) =>
       {!isEidting && (
         <p className={cn(
           "text-sm mt-2", 
-        !initialData.description && "text-slate-500 italic")}>
-         {initialData.description || "No description"}
+        !initialData.price && "text-slate-500 italic")}>
+         {initialData.price
+         ?  formatPrice(initialData.price)
+         : "No price"}
+        
         </p>
+     
        
       )}
       {isEidting && (
@@ -89,18 +94,18 @@ export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) =>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
           <FormField
             control={form.control}
-            name="description"
+            name="price"
             render={({ field }) => (
               <FormItem>
            
                 <FormControl>
-                  <Textarea 
-                  placeholder="e.g. 'Computer science' "
-                  disabled={isSubmitting}
-                  {...field} />
+                  <Input 
+                    placeholder="e.g. '29$' "
+                    disabled={isSubmitting}
+                    {...field} />
                 </FormControl>
                 <FormDescription>
-                  This is your public display name.
+                  This is your public display price.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

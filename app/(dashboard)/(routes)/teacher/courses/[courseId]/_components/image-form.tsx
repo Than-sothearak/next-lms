@@ -30,14 +30,14 @@ interface ImageFormProps {
   initialData: {
     imageUrl: string;
   };
-  imageuploadId: string;
+  courseId: string;
 }
 
 interface Image {
   url: string;
 }
 
-export const ImageForm = ({ initialData, imageuploadId }: ImageFormProps) => {
+export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<null>(null);
@@ -64,7 +64,7 @@ export const ImageForm = ({ initialData, imageuploadId }: ImageFormProps) => {
   //   try {
   //     const res = await axios.post(`/api/uploadimage/`, formData);
   //     setImages(res.data.link)
-  //     await axios.patch(`/api/course/${imageuploadId}`, img);
+  //     await axios.patch(`/api/course/${courseId}`, img);
 
   //     toast.success("Course updated");
   //     toggleEdit();
@@ -83,7 +83,7 @@ export const ImageForm = ({ initialData, imageuploadId }: ImageFormProps) => {
       setUploading(true);
       const formData = new FormData();
       formData.append("file", files);
-      const res = await axios.post(`/api/uploadimage/`, formData);
+      const res = await axios.post(`/api/upload-image/`, formData);
       setImages(res.data.link);
       setUploading(false);
     }
@@ -96,7 +96,7 @@ export const ImageForm = ({ initialData, imageuploadId }: ImageFormProps) => {
       images,
     };
     try {
-      await axios.patch(`/api/imageupload/${imageuploadId}`, values);
+      await axios.patch(`/api/course/${courseId}/image`, values);
 
       toast.success("Image updated");
 

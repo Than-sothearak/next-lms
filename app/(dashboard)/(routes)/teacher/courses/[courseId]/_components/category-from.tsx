@@ -17,6 +17,8 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { Combobox } from "@/components/ui/combobox";
 
+
+
 interface CategoryFormProps {
   initialData: {
     name: string;
@@ -81,7 +83,7 @@ export const CategoryForm = ({
       </div>
       {!isEidting && (
         <p
-          className={cn("text-sm mt-2", !initialData.categoryId && "text-slate-500")}
+          className={cn("text-sm mt-2", !initialData.categoryId && "text-slate-500 italic")}
         >
           {selectedOption?.label || "No category"}
         </p>

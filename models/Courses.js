@@ -11,7 +11,7 @@ const CourseSchema = new Schema({
     default: false
 },
   categoryId: {type:mongoose.Types.ObjectId, ref: 'Category'},
-  attachment: [{type:String}],
+  attachments: [{type:mongoose.Types.ObjectId, ref: 'Attachment'}],
 
 }, {
   timestamps: true,

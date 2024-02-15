@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
+import mime from "mime-types";
 
 
 const s3Client = new S3Client({
@@ -9,18 +10,17 @@ const s3Client = new S3Client({
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
     }
 });
-const bucketName = "thearak-next-ecommerce";
+const bucketName = "thearak-next-lms";
 async function uploadFileToS3(file, fileName) {
+	const fileBuffer = file;   
+	const contentType = mime.lookup(`${fileName}`) 
 
-	const fileBuffer = file;
-
-    
 	const params = {
 		Bucket: process.env.S3_BUCKET_NAME,
-		Key: `${fileName}`,
+		Key: `Image/${fileName}`,
 		Body: fileBuffer,
 		ACL: 'public-read',
-		ContentType: "image/jpg"
+		ContentType: contentType,
 	}
 
 	const command = new PutObjectCommand(params);
@@ -40,12 +40,13 @@ export async function POST(req) {
 		} 
         const ext = file.name.split(".").pop();
 		const newFilename = Date.now() + "." + ext;
-       
+	
+	
 		const buffer = Buffer.from(await file.arrayBuffer());
 		const fileName = await uploadFileToS3(buffer, newFilename);
 		
 		
-		const link = `https://${bucketName}.s3.amazonaws.com/${fileName}`;
+		const link = `https://${bucketName}.s3.amazonaws.com/Image/${fileName}`;
 		links.push(link);
 		return NextResponse.json({ success: true, link});
 	} catch (error) {

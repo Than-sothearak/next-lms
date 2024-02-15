@@ -2,13 +2,16 @@ import { IconBadge } from "@/components/ui/icon.badge";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Course } from "@/models/Courses";
 import { auth } from "@clerk/nextjs";
-import { LayoutDashboard, ListChecks } from "lucide-react";
+import { CircleDollarSign, File, LayoutDashboard, ListChecks } from "lucide-react";
 import { redirect } from "next/navigation";
 import { TitleForm } from "./_components/title-form";
 import { DesciptionForm } from "./_components/description-from";
 import { ImageForm } from "./_components/image-form";
 import { Category } from "@/models/Category";
 import { CategoryForm } from "./_components/category-from";
+import { PriceForm } from "./_components/price-from";
+import { AttactmentForm } from "./_components/attactment-form";
+import { Attachment } from "@/models/Attachment";
 
 mongooseConnect();
 
@@ -19,8 +22,10 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
   const courses = await Course.findById({ _id: id });
   const category = await Category.find();
   const course = JSON.parse(JSON.stringify(courses));
-  const categories = JSON.parse(JSON.stringify(category));
-
+  const attachment = await Attachment.find({courses: id})
+  const attachments = JSON.parse(JSON.stringify(attachment));
+  
+ 
   if (!userId) {
     redirect("/");
   }
@@ -61,14 +66,14 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
 
           <DesciptionForm initialData={course} courseId={course._id} />
 
-          <ImageForm initialData={course} imageuploadId={course._id} />
+          <ImageForm initialData={course} courseId={course._id} />
 
           <CategoryForm
             initialData={course}
             courseId={course._id}
-            options={categories.map((category) => ({
-              label: category.name,
-              value: category._id,
+            options={category.map((category) => ({
+              label: JSON.parse(JSON.stringify(category.name)),
+              value: JSON.parse(JSON.stringify(category._id)),
             }))}
           />
         </div>
@@ -82,6 +87,33 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
             <div>
               TODO: Chapter
             </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-x-2">
+              <IconBadge icon={CircleDollarSign}/>
+              <h1 className="text-xl">
+                Sell your course
+              </h1>
+            </div>
+            <PriceForm 
+            initialData={course}
+            courseId={course._id}
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center gap-x-2">
+              <IconBadge icon={File}/>
+              <h1 className="text-xl">
+                Resourse & Attactment
+              </h1>
+            </div>
+            <AttactmentForm 
+            attachmentsProps={attachments}
+            attachments={attachments}
+            course={course}
+            courseId={course._id}
+            />
           </div>
         </div>
       </div>

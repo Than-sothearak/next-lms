@@ -14,7 +14,7 @@ export async function POST(req: Request, res: Response) {
       if (!userId) {
         return new NextResponse("Unauthorized", { status: 401 });
       }
-  
+     
       const findCourse = await Course.findOne({title})
       if (findCourse){
           return new NextResponse('Course already exists!', { status: 400 });

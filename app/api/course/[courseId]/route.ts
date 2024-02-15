@@ -12,15 +12,21 @@ export async function PATCH(
         const { userId } = auth();
         const { courseId } = params;
         const values = await req.json();
-        const catId = values.categoryId
-
+        // const attachment = await req.json();
+    
         if (!userId) {
             return new NextResponse("Unauthorized", {status: 401})
         }
+        const courseOwner = await Course.find({ _id: params.courseId, userId: userId },);
+        if (courseOwner.length > 0){
+            const updateCourse = await Course.updateOne({_id: courseId}, {userId: userId, ...values} )
 
-        const updateCourse = await Course.updateOne({_id: courseId}, {userId: userId, ...values} )
+            return NextResponse.json(updateCourse);
+        } else {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
 
-        return NextResponse.json(updateCourse);
+        
     } catch (error) {
      console.log("[COURSE_ID", error);
      return new NextResponse("Internal Error", { status: 500})
