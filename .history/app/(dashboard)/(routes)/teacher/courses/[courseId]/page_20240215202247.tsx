@@ -1,6 +1,6 @@
 import { IconBadge } from "@/components/ui/icon.badge";
 import { mongooseConnect } from "@/lib/mongoose";
-import { Course } from "@/models/Course";
+import { Course } from "@/models/Courses";
 import { auth } from "@clerk/nextjs";
 import { CircleDollarSign, File, LayoutDashboard, ListChecks } from "lucide-react";
 import { redirect } from "next/navigation";

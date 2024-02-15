@@ -1,13 +1,21 @@
 "use client";
 import axios from "axios";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FieldName, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
 import { File, ImageIcon, Loader2, Pencil, PlusCircle, Target, Upload, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
+const formSchema = z.object({
+  url: z.string().min(2, {
+    message: "image is required",
+  }),
+});
 
 interface AttactmentFormProps {
   course: {

@@ -27,7 +27,7 @@ export async function PATCH(
         { userId: userId, ...values }
       );
 
-      await Category.updateOne( {_id: values.categoryId},{ $addToSet: {courses: courseId}});
+      await Category.updateOne( {},{ $addToSet: { courses: courseId }, $pull: {courses: courseId}});
 
       return NextResponse.json(updateCourse);
     } else {

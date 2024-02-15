@@ -13,7 +13,7 @@ export async function PATCH(
     const { userId } = auth();
     const { courseId } = params;
     const values = await req.json();
-  
+
     if (!userId) {
       return new NextResponse("Unauthorized no user", { status: 401 });
     }
@@ -26,8 +26,15 @@ export async function PATCH(
         { _id: courseId },
         { userId: userId, ...values }
       );
-
-      await Category.updateOne( {_id: values.categoryId},{ $addToSet: {courses: courseId}});
+  
+      const findId = Category.find({courses: courseId})
+      const findCatId = Course.find({categoryId: findId })
+      if((await findId).length > 0){
+        return new NextResponse("Err", { status: 401 });
+      } else {
+        await Category.updateMany({ $push: { courses: courseId } });
+      }
+     
 
       return NextResponse.json(updateCourse);
     } else {

@@ -27,7 +27,9 @@ export async function PATCH(
         { userId: userId, ...values }
       );
 
-      await Category.updateOne( {_id: values.categoryId},{ $addToSet: {courses: courseId}});
+      const findThesameid =  await Category.find( {_id: values.categoryId},  { courses: courseId } );
+
+      await Category.updateOne( {_id: values.categoryId},{ $push: { courses: courseId } });
 
       return NextResponse.json(updateCourse);
     } else {

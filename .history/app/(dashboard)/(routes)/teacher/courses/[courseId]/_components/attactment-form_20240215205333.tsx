@@ -1,13 +1,21 @@
 "use client";
 import axios from "axios";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FieldName, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
 import { File, ImageIcon, Loader2, Pencil, PlusCircle, Target, Upload, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
+const formSchema = z.object({
+  url: z.string().min(2, {
+    message: "image is required",
+  }),
+});
 
 interface AttactmentFormProps {
   course: {
@@ -20,10 +28,7 @@ interface AttactmentFormProps {
   };
   attachments: string;
 }
-interface FileProps {
-  name: string,
-  url: string
-}
+
 export const AttactmentForm = ({
   course,
   courseId,
@@ -32,7 +37,7 @@ export const AttactmentForm = ({
 }: AttactmentFormProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState<FileProps | null>(null)
+  const [fileName, setFileName] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [url, setUrl] = useState<any>("");
   const router = useRouter();

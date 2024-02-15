@@ -13,7 +13,7 @@ const backgroundVariants = cva(
 
             },
             size: {
-                default: "p-2",
+                default: "p-1",
                 sm: "p-1"
             }
         },
