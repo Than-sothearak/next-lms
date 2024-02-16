@@ -58,7 +58,7 @@ export const ChapterForm = ({ initialData, courseId, chapters }: ChapterFormProp
       toggleCreating();
       router.refresh();
     } catch (error) {
-      toast.error("Someting went wrong");
+      toast.error(error.response.data);
     }
   }
 
@@ -74,10 +74,7 @@ export const ChapterForm = ({ initialData, courseId, chapters }: ChapterFormProp
     toast.error("Someting went wrong")
    }
   }
-  
-  const onEdit = (id: string) => {
-    router.push(`/teacher/courses/${courseId}/chapters/${id}`)
-  }
+
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
@@ -131,7 +128,7 @@ export const ChapterForm = ({ initialData, courseId, chapters }: ChapterFormProp
         >
           {!chapters?.length && "No chapters"}
           <ChapterList
-          onEdit={onEdit}
+          onEdit={() => {}}
           onReorder={onReorder}
           items={chapters || []}
           />

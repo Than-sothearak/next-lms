@@ -56,8 +56,8 @@ export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) =>
      toast.success("Course updated");
      toggleEdit();
      router.refresh();
-    } catch {
-      toast.error("Someting went wrong");
+    } catch (error){
+      toast.error(error.response.data);
     }
   }
 

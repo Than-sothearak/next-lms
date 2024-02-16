@@ -26,15 +26,16 @@ const formSchema = z.object({
   }),
 });
 
-interface DesciptionFormProps {
+interface ChapterChapterDesciptionFormProps {
   initialData: {
     description: string
   };
     courseId: string;
+    chapterId: string;
   };
   
 
-export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) => {
+export const ChapterDesciptionForm = ({ initialData, courseId}: ChapterChapterDesciptionFormProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const router = useRouter();
   const toggleEdit = () => {

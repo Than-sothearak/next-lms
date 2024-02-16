@@ -21,20 +21,19 @@ import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
-  description: z.string().min(2, {
-    message: "description is required",
-  }),
+  description: z.string().min(1),
 });
 
-interface DesciptionFormProps {
+interface ChapterChapterDesciptionFormProps {
   initialData: {
     description: string
   };
     courseId: string;
+    chapterId: string;
   };
   
 
-export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) => {
+export const ChapterDesciptionForm = ({ initialData, courseId}: ChapterChapterDesciptionFormProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const router = useRouter();
   const toggleEdit = () => {
