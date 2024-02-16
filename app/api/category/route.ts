@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs";
 import { mongooseConnect } from "../../../lib/mongoose";
 import { NextResponse } from "next/server";
-import { Category } from "@/models/Category";
+// import { Category } from "@/models/Category";
+import { Category } from "@/models/Course";
 
 export async function POST(req: Request, res: Response) {
   const { method } = req;

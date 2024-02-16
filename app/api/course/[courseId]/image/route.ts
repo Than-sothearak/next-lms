@@ -1,4 +1,4 @@
-import { Course } from "@/models/Courses";
+import { Course } from "@/models/Course";
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 

@@ -2,17 +2,23 @@ import { IconBadge } from "@/components/ui/icon.badge";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Course } from "@/models/Course";
 import { auth } from "@clerk/nextjs";
-import { CircleDollarSign, File, LayoutDashboard, ListChecks } from "lucide-react";
+import {
+  CircleDollarSign,
+  File,
+  LayoutDashboard,
+  ListChecks,
+} from "lucide-react";
 import { redirect } from "next/navigation";
 import { TitleForm } from "./_components/title-form";
 import { DesciptionForm } from "./_components/description-from";
 import { ImageForm } from "./_components/image-form";
-import { Category } from "@/models/Category";
+import { Category } from "@/models/Course";
 import { CategoryForm } from "./_components/category-from";
 import { PriceForm } from "./_components/price-from";
 import { AttactmentForm } from "./_components/attactment-form";
 import { Attachment } from "@/models/Attachment";
-
+import { ChapterForm } from "./_components/chapter-form";
+import { Chapter } from "../../../../../../models/Chapter"
 mongooseConnect();
 
 const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
@@ -22,10 +28,12 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
   const courses = await Course.findById({ _id: id });
   const category = await Category.find();
   const course = JSON.parse(JSON.stringify(courses));
-  const attachment = await Attachment.find({courses: id})
-  const attachments = JSON.parse(JSON.stringify(attachment));
+  const getAttachments = await Attachment.find({ courses: id }).populate("courses");
+  const attachments = JSON.parse(JSON.stringify(getAttachments));
   
- 
+  const getChapters = await Chapter.find({ courseId: id}).sort({position: 1})
+  const chapters = JSON.parse(JSON.stringify(getChapters));
+
   if (!userId) {
     redirect("/");
   }
@@ -85,34 +93,30 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
               <h2 className="text-xl">Course chapter</h2>
             </div>
             <div>
-              TODO: Chapter
+              <ChapterForm 
+              initialData={chapters} 
+              chapters={chapters}
+              courseId={course._id} />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-x-2">
-              <IconBadge icon={CircleDollarSign}/>
-              <h1 className="text-xl">
-                Sell your course
-              </h1>
+              <IconBadge icon={CircleDollarSign} />
+              <h1 className="text-xl">Sell your course</h1>
             </div>
-            <PriceForm 
-            initialData={course}
-            courseId={course._id}
-            />
+            <PriceForm initialData={course} courseId={course._id} />
           </div>
 
           <div>
             <div className="flex items-center gap-x-2">
-              <IconBadge icon={File}/>
-              <h1 className="text-xl">
-                Resourse & Attactment
-              </h1>
+              <IconBadge icon={File} />
+              <h1 className="text-xl">Resourse & Attactment</h1>
             </div>
-            <AttactmentForm 
-            attachmentsProps={attachments}
-            attachments={attachments}
-            course={course}
-            courseId={course._id}
+            <AttactmentForm
+              attachmentsProps={attachments}
+              attachments={attachments}
+              course={course}
+              courseId={course._id}
             />
           </div>
         </div>

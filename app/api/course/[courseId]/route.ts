@@ -1,5 +1,5 @@
 import { mongooseConnect } from "@/lib/mongoose";
-import { Category } from "@/models/Category";
+import { Category } from "@/models/Course";
 import { Course } from "@/models/Course";
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { mongooseConnect } from '@/lib/mongoose'
-import { Category } from '@/models/Category'
+// import { Category } from '@/models/Category'
+import { Category } from '@/models/Course'
 import Link from 'next/link'
 import React from 'react'
 
