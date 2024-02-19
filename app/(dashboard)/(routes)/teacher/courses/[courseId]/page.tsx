@@ -19,6 +19,9 @@ import { AttactmentForm } from "./_components/attactment-form";
 import { Attachment } from "@/models/Attachment";
 import { ChapterForm } from "./chapters/[chapterId]/_components/chapter-form";
 import { Chapter } from "../../../../../../models/Chapter"
+import { boolean } from "zod";
+import { Banner } from "@/components/banner";
+import Actions from "./_components/actions";
 mongooseConnect();
 
 const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
@@ -48,13 +51,24 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
     course.imageUrl,
     course.price,
     course.categoryId,
+    getChapters.some(chapter => chapter.isPublished)
   ];
+  
 
   const totalFields = requiredFields.length;
   const completedFields = requiredFields.filter(Boolean).length;
 
   const completedText = `(${completedFields}/${totalFields})`;
+  const isComplete = requiredFields.every(Boolean)
+
   return (
+   <>
+   {!course.isPublished && (
+    <Banner
+    variant="warning"
+    label="This course is unpublished. it will not be visible to students."
+  />
+   )}
     <div className="p-6">
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-y-2">
@@ -63,6 +77,12 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
             Complete all fields {completedText}
           </span>
         </div>
+        <Actions
+            disabled={!isComplete}
+            courseId={course._id}
+            chapterId={chapters?._id}
+            isPublished={course?.isPublished}
+          />
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-16">
         <div>
@@ -122,6 +142,7 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
         </div>
       </div>
     </div>
+   </>
   );
 };
 

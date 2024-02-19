@@ -78,14 +78,14 @@ export const ChapterVideo = ({
         Chapter video
         <Button variant="ghost" onClick={toggleEdit}>
           {isEidting && <>Cancel</>}
-          {!isEidting && !initialData.videoUrl && (
+          {!isEidting && !initialData?.videoUrl && (
             <>
               <PlusCircle className="h-4 w-4 mr-2" />
               Add a video
             </>
           )}
 
-          {!isEidting && initialData.videoUrl && (
+          {!isEidting && initialData?.videoUrl && (
             <>
               <Pencil className="h-4 w-4 mr-2" />
               Edit Video
@@ -94,15 +94,15 @@ export const ChapterVideo = ({
         </Button>
       </div>
       {!isEidting &&
-        (!initialData.videoUrl ? (
+        (!initialData?.videoUrl ? (
           <div className="flex items-center justify-center h-80 bg-slate-200 rounded-md">
             <Video className="h-10 w-10 text-slate-500" />
           </div>
         ) : (
           <div className="relative aspect-video mt-2">
             <video
-              src={initialData.videoUrl}
-              width="800"
+              src={initialData?.videoUrl}
+              width="1000"
               height="400"
               controls
               className="object-cover rounded-md"

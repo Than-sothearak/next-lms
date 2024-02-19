@@ -42,7 +42,7 @@ export const ChapterTitleForm = ({ initialData, chapterId, courseId }: ChapterTi
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: initialData.title,
+      title: initialData?.title,
     },
   });
 
@@ -74,7 +74,7 @@ export const ChapterTitleForm = ({ initialData, chapterId, courseId }: ChapterTi
           )}
         </Button>
       </div>
-      {!isEidting && <p className="text-sm mt-2">{initialData.title}</p>}
+      {!isEidting && <p className="text-sm mt-2">{initialData?.title}</p>}
       {isEidting && (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">

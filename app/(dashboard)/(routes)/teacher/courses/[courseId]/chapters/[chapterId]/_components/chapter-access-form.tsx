@@ -49,7 +49,7 @@ export const ChapterAccessForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      isFree: !!initialData.isFree,
+      isFree: !!initialData?.isFree,
     },
   });
 
@@ -88,11 +88,11 @@ export const ChapterAccessForm = ({
         <div
           className={cn(
             "text-sm mt-2 italic",
-            !initialData.isFree ? "text-red-500" : "text-green-500"
+            !initialData?.isFree ? "text-red-500" : "text-green-500"
           )}
         >
          <p>
-         {initialData.isFree ? (
+         {initialData?.isFree ? (
             <>This chapter is free</>
           ): (
             <>This chapter is not free</>
