@@ -1,8 +1,9 @@
 "use client";
 import mongoose, { Document } from "mongoose";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Trash } from "lucide-react";
+import { ArrowUpDown,  Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link"
 
 import {
   DropdownMenu,
@@ -13,11 +14,11 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 import { ConfirmModal } from "@/components/modals/confirm-modal";
-import { useRouter } from "next/navigation";
 
 interface CourseDocument extends Document {
   _id: string;
   name: string;
+  categoryId: string
 }
 
 const onDelete = async (categoryId: string) => {
@@ -45,6 +46,23 @@ export const categoryColumns: ColumnDef<CourseDocument>[] = [
         </Button>
       );
     },
+    cell: ({row}) => {
+      const { _id } = row.original;
+      const {name} = row.original
+      const categoryId = _id
+      return (
+        <div className="cursor-pointer">
+          <Link href={`/teacher/category/${categoryId}`}>
+          {name}
+          </Link>
+         
+        </div>
+      )
+    }
+  },
+  {
+    id: "actions",
+
   },
 
   {

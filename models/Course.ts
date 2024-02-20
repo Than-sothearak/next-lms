@@ -1,4 +1,4 @@
-import mongoose, { model, Schema, models,Types } from "mongoose";
+import mongoose, { model, Schema, models,Types,Model } from "mongoose";
 
 
 interface CourseProps {
@@ -44,5 +44,9 @@ const CategorySchema = new Schema<CategoryProps>({
   courses: [{type: Schema.Types.ObjectId, ref: 'Course'}],
 });
 
-export const Category = models.Category || model("Category", CategorySchema);
-export const Course = models.Course || model("Course", CourseSchema);
+
+const CourseModel: Model<CourseProps> = mongoose.models.Course || mongoose.model<CourseProps>("Course", CourseSchema);
+export { CourseModel as Course };
+
+const CategoryModel: Model<CategoryProps> = mongoose.models.Category || mongoose.model<CategoryProps>("Category", CategorySchema);
+export { CategoryModel as Category };

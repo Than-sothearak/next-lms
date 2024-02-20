@@ -19,7 +19,6 @@ import { AttactmentForm } from "./_components/attactment-form";
 import { Attachment } from "@/models/Attachment";
 import { ChapterForm } from "./chapters/[chapterId]/_components/chapter-form";
 import { Chapter } from "../../../../../../models/Chapter"
-import { boolean } from "zod";
 import { Banner } from "@/components/banner";
 import Actions from "./_components/actions";
 mongooseConnect();

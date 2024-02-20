@@ -25,15 +25,15 @@ import {
 import Link from "next/link"
 import { PlusCircle } from "lucide-react"
 
-interface DataTableProps<TData, TValue> {
+interface CategoryDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
 }
 
-export function DataTable<TData, TValue>({
+export function CategoryDataTable<TData, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+}: CategoryDataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const table = useReactTable({
@@ -55,18 +55,18 @@ export function DataTable<TData, TValue>({
     <>
     <div className="flex items-center justify-between mb-4">
         <Input
-          placeholder="Filter course..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter categories..."
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
       
-      <Link href="/teacher/create">
+      <Link href="/teacher/createcat">
       <Button>
-      <PlusCircle className="w-4 h-4 mr-2"/>
-        Create new course
+        <PlusCircle className="w-4 h-4 mr-2"/>
+        Create new category
       </Button>
       </Link>
 

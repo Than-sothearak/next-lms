@@ -20,13 +20,7 @@ const CoursesPage = async () => {
   const courses = JSON.parse(JSON.stringify(course))
   return (
     <>
-    <div className='p-6'>
-      <Link href="/teacher/create">
-      <Button>
-        Create new course
-      </Button>
-      </Link>
-    </div>
+   
      <div className="p-6">
           <DataTable columns={columns} data={courses} />
     </div>
