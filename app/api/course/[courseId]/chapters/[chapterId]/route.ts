@@ -24,7 +24,8 @@ export async function PATCH(
       _id: courseId,
       userId: userId,
     });
-    if (courseOwner.length > 0) {
+    if (courseOwner.length > 0) {    
+
       const updateChapter = await Chapter.updateOne(
         { _id: chapterId },
         { ...values }
@@ -49,8 +50,6 @@ export async function DELETE(
     const { userId } = auth();
     const { courseId } = params;
     const { chapterId } = params
-    
-    console.log(chapterId)
 
     if (!userId) {
       return new NextResponse("Unauthorized no user", { status: 401 });
@@ -64,6 +63,7 @@ export async function DELETE(
       const deleteChapter = await Chapter.deleteOne(
         { _id: chapterId },
       );
+      await Course.updateOne({_id: courseId}, {$pull: { chapter: chapterId  }} )
 
       const publishedChapter = await Chapter.find({
         courseId: courseId, isPublished: true,

@@ -19,7 +19,7 @@ export async function PATCH(
 
         if (courseOwner.length > 0) {
 
-
+            await Course.updateOne({_id: courseId}, {$pull: { chapter: chapterId  }} )
             const publishedChapter = await Chapter.updateOne({ _id: chapterId, courseId: courseId }, {
                 isPublished: false,
             })

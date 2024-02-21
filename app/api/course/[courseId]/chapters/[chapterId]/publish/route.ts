@@ -19,11 +19,11 @@ export async function PATCH(
 
         if (courseOwner.length > 0) {
 
-
+           
             const publishedChapter = await Chapter.updateOne({ _id: chapterId, courseId: courseId }, {
                 isPublished: true,
             })
-
+            await Course.updateOne({_id: courseId, userId: userId}, {$addToSet : {chapter: chapterId}})
             return NextResponse.json(publishedChapter);
 
         } else {

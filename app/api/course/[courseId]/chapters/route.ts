@@ -2,13 +2,14 @@ import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { Course } from "@/models/Course";
 import { auth } from "@clerk/nextjs";
+import { ObjectId } from "mongoose";
 import { NextResponse } from "next/server";
 
 
 export async function POST(
     req: Request,
     { params }: { params: { courseId: string } }) {
-        await mongooseConnect();
+    await mongooseConnect();
     try {
         const { userId } = auth();
         if (!userId) {
@@ -19,11 +20,18 @@ export async function POST(
         const courseOwner = await Course.find({ _id: params.courseId, userId: userId },);
 
         if (courseOwner.length > 0) {
-            
-            const findLastChapter = await Chapter.findOne({courseId: courseId}).sort({position: -1})
+
+            interface ChapterProps {
+
+                _id: number;
+                position: number;
+
+            }
+            const findLastChapter: ChapterProps | null = await Chapter.findOne({ courseId: courseId }).sort({ position: -1 })
+
             const newPostion = findLastChapter ? findLastChapter.position + 1 : 0;
 
-            const createChapter = await Chapter.create({ courseId: courseId, position: newPostion, title: values.title})
+            const createChapter = await Chapter.create({ courseId: courseId, position: newPostion, title: values.title })
 
             return NextResponse.json(createChapter);
 
