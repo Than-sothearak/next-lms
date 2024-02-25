@@ -1,6 +1,7 @@
 import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { UserProgress } from "@/models/UserProgress";
+import { auth } from "@clerk/nextjs";
 
 export const getProgress = async (
 
@@ -8,7 +9,9 @@ export const getProgress = async (
     courseId: string,
 ): Promise<number> => {
     await mongooseConnect()
+  
     try {
+        const {userId} = auth();
         const publishedChapters = await Chapter.find({courseId: courseId,  isPublished: true})
 
 
