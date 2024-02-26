@@ -31,11 +31,12 @@ interface CoursesProps {
         _id: string;
     };
     validCompletedChapters: [];
-    purchase:{}
+    purchase: {
+        courseId: number;
+    }[];
 }
 
-export const CoursesList = ({items,publishedChapterIds,validCompletedChapters}: CoursesProps) => {
- 
+export const CoursesList = ({items,publishedChapterIds,validCompletedChapters,purchase}: CoursesProps) => {
 
  const courses = items.map((c) => {
     return c.course
@@ -50,6 +51,7 @@ export const CoursesList = ({items,publishedChapterIds,validCompletedChapters}: 
  const chapters = chapter.map(c => c[0])
  const categories = category.map(c => c[0])
 
+
   return (
     <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {courses.map((course) => (
@@ -58,6 +60,7 @@ export const CoursesList = ({items,publishedChapterIds,validCompletedChapters}: 
             category={categories.filter(c => c._id === course.categoryId)[0]}
             key={course._id}
             chapters={chapters.filter(c => c.courseId === course._id)[0]}
+            purchase={purchase.filter(p => p.courseId === course._id)[0]}
             validCompletedChapters={validCompletedChapters.filter((c: {courseId: number}) => c.courseId === course._id)}
             {...course }
           

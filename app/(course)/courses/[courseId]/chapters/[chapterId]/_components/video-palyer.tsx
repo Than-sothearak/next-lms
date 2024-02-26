@@ -37,7 +37,7 @@ export const VideoPlayer = ({
   const onEnd = async () => {
     try {
       if (completeOnEnd) {
-        await axios.put(`/api/courses/${courseId}/chapters/${chapterId}/progress`, {
+        await axios.put(`/api/course/${courseId}/chapters/${chapterId}/progress`, {
           isCompleted: true,
         });
 
@@ -50,6 +50,7 @@ export const VideoPlayer = ({
 
         if (nextChapterId) {
           router.push(`/courses/${courseId}/chapters/${nextChapterId}`)
+          router.refresh();
         }
       }
     } catch {
@@ -75,6 +76,7 @@ export const VideoPlayer = ({
       {!isLocked && (
          <video
          onCanPlay={() => setIsReady(true)}
+         onEnded={onEnd}
          src={url}
          width="1000"
          height="400"

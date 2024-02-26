@@ -8,7 +8,7 @@ import Link from "next/link";
 import React from "react";
 
 interface CoursesCardProps {
-    _id: number;
+  _id: number;
   title: string;
   categoryId: string;
   imageUrl: string;
@@ -22,10 +22,13 @@ interface CoursesCardProps {
     isFree: boolean;
   };
 
-  validCompletedChapters: string[]
+  validCompletedChapters: {
+    isCompleted: boolean;
+  }[];
+  purchase: {};
 }
 export default function CoursesCard({
-    _id,
+  _id,
   title,
   category,
   chapter,
@@ -33,11 +36,17 @@ export default function CoursesCard({
   chapters,
   price,
   validCompletedChapters,
+  purchase,
 }: CoursesCardProps) {
+  const countCompleted = validCompletedChapters.map((f) => f.isCompleted);
+  const count = countCompleted.filter(Boolean).length;
+  const progressPercentage = (count / chapter.length) * 100;
 
-const progressPercentage = (validCompletedChapters.length / chapter.length) * 100;
   return (
-    <Link href={`/courses/${_id}`} className="p-4 border border-slate-200 rounded-md flex flex-col justify-between ite">
+    <Link
+      href={`/courses/${_id}`}
+      className="p-4 border border-slate-200 rounded-md flex flex-col justify-between ite"
+    >
       <div className="relative aspect-video">
         <Image
           alt="Uplaod"
@@ -58,20 +67,37 @@ const progressPercentage = (validCompletedChapters.length / chapter.length) * 10
       {/* {!chapters.isFree ? <p className="text-slate-700">Not free</p> : <p>Free</p>} */}
 
       {progressPercentage !== null ? (
+        <div>
+          {purchase && (
             <CourseProgress
               variant={progressPercentage === 100 ? "success" : "default"}
               size="sm"
               value={progressPercentage}
             />
-          ) : (
-            <p className="text-md md:text-sm font-medium text-slate-700">
-              {formatPrice(price)}
-            </p>
           )}
-      {/* <p className="text-md">
-       
-        {price.toLocaleString("en-US", { style: "currency", currency: "USD" })}
-      </p> */}
+        </div>
+      ) : (
+        <p className="text-md md:text-sm font-medium text-slate-700">
+          {formatPrice(price)}
+        </p>
+      )}
+
+      {!purchase ? (
+        <div>
+          <p className="text-md mt-4">
+           {price.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+            })}
+          </p>
+        </div>
+      ) : (
+        <div>
+          <p className="text-slate-100 text-md mt-4 p-2 bg-blue-600 text-center rounded-md">
+            Your course
+          </p>
+        </div>
+      )}
     </Link>
   );
 }
