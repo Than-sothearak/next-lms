@@ -17,7 +17,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", {status: 401})
         }
         
-            const updateCourse = await Course.updateOne({_id: courseId, userId: userId}, {imageUrl: values.images} )
+            const updateCourse = await Course.updateOne({_id: courseId, userId: userId}, {imageUrl: values.imageFile} )
             return NextResponse.json(updateCourse);
        
         

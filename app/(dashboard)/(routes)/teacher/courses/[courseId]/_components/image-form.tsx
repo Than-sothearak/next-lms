@@ -40,11 +40,12 @@ interface Image {
 export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<null>(null);
-  const [images, setImages] = useState<any>("");
+  const [selectedImage, setSelectedImage] = useState<any>("");
+  const [imageFile, setImageFile] = useState<any>("");
   const router = useRouter();
   const toggleEdit = () => {
     setIsEditing((editing) => !editing);
+    setSelectedImage("");
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -54,37 +55,51 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
     },
   });
 
-
-  async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files?.[0];
-
-    if (files) {
-      setUploading(true);
-      const formData = new FormData();
-      formData.append("file", files);
-      const res = await axios.post(`/api/upload-image/`, formData);
-      setImages(res.data.link);
-      setUploading(false);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file); // Save the file for upload
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
-    setUploading(false);
-  }
+  };
 
-  async function handleOnSubmit(e: React.SyntheticEvent) {
+  async function handleUpload(e: React.SyntheticEvent) {
+    if (!imageFile) return;
     e.preventDefault();
+
+    setUploading(true); // Indicate that the upload has started
+
     const values = {
-      images,
+      imageFile,
     };
+
+    const formData = new FormData();
+    formData.append("file", imageFile);
+
+    console.log(formData);
+
     try {
+      // POST request to upload the image file
+      const res = await axios.post(`/api/upload-image/`, formData);
+      setImageFile(res.data.link);
+      console.log(imageFile)
+      // PATCH request to update the course image info
       await axios.patch(`/api/course/${courseId}/image`, values);
 
-      toast.success("Image updated");
-
-      toggleEdit();
-      setImages("");
-      router.refresh();
+      // Indicate the upload has finished
       setUploading(false);
+
+      // Toggle edit mode and refresh the page
+      toggleEdit();
+      toast.success("Image updated");
+      router.refresh();
     } catch (error) {
-      toast.error("Image not send!");
+      console.error("Upload error:", error);
+      toast.error("Image not sent!");
       setUploading(false);
     }
   }
@@ -127,43 +142,51 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
           </div>
         ))}
       {isEidting && (
-        <form onSubmit={handleOnSubmit}>
+        <form onSubmit={handleUpload}>
           <label className="flex flex-col justify-center items-center border-4 h-60 rounded-md border-dotted cursor-pointer">
-            {images && (
-                <div className="relative">
-                <Image
-                height={180}
-                width={180}
-                  alt="Uplaod"
-                  className="object-cover rounded-md mb-2"
-                  src={images}
-                />
-              </div>
-            )}
-            {!images && (
-               <div>
-               {uploading && (
-                 <h2 className="text-blue-500 text-muted-foreground">Please wait a moment...</h2>
-               )}
+            <div>
+              {uploading && (
+                <h2 className="text-blue-500 text-muted-foreground">
+                  Please wait a moment...
+                </h2>
+              )}
               {!uploading && (
                 <h2 className="text-blue-500">Choose image file here</h2>
               )}
-             </div>
-            )}
-            <input className="hidden" onChange={handleOnChange} type="file" name="image"  disabled={uploading}/>
+            </div>
+
+            <input
+              className="hidden"
+              onChange={handleImageChange}
+              accept="image/*"
+              type="file"
+              name="image"
+              disabled={uploading}
+            />
           </label>
           <div className="text-xs text-muted-foreground mt-4">
             <p>16:0 aspect ratio recommend</p>
           </div>
+          {selectedImage && (
+            <div className="mt-4">
+              <Image
+                width={300}
+                height={300}
+                src={selectedImage}
+                alt="Selected Preview"
+                className="max-w-full h-auto border-2 border-gray-300 rounded-lg shadow-md"
+              />
+            </div>
+          )}
 
-          {!images ? (
-            <Button type="submit" disabled={uploading} className="mt-5">
-            {uploading ? "Uploading..." : "Upload"}
-          </Button>
+          {!imageFile ? (
+            <Button type="submit" disabled className="mt-5">
+              {uploading ? "Uploading..." : "Upload"}
+            </Button>
           ) : (
             <Button type="submit" disabled={uploading} className="mt-5">
-            {uploading ? "Uploading..." : "Save"}
-          </Button>
+              {uploading ? "Uploading..." : "Upload"}
+            </Button>
           )}
         </form>
       )}
