@@ -100,7 +100,7 @@ const ChapterPage = async ({
         <div>
           <div className="p-4 flex flex-col md:flex-row items-center justify-between">
             <h2 className="text-2xl font-semibold mb-2">{chapter.title}</h2>
-            {!purchase ? (
+            {/* {!purchase ? (
               <CourseEnrollButton
                 courseId={params.courseId}
                 price={course.price!}
@@ -112,7 +112,13 @@ const ChapterPage = async ({
                 nextChapterId={nextChapter?._id}
                 isCompleted={!!userProgress?.isCompleted}
               />
-            )}
+            )} */}
+            <CourseProgressButton
+              chapterId={params.chapterId}
+              courseId={params.courseId}
+              nextChapterId={nextChapter?._id}
+              isCompleted={!!userProgress?.isCompleted}
+            />
           </div>
           <Separator />
           <div>

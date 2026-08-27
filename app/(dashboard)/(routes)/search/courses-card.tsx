@@ -58,7 +58,7 @@ export default function CoursesCard({
 
       <div className="mt-2">
         <h1 className="text-md">{title}</h1>
-        <p className="text-sm text-slate-500 mt-2">{category.name}</p>
+        <p className="text-sm text-slate-500 mt-2">{category?.name}</p>
         <div className="flex items-center gap-x-2 mt-4 mb-4">
           <BookOpen className="w-4 h-4" />
           <p className="text-sm text-slate-500">{chapter.length} Chapters</p>
