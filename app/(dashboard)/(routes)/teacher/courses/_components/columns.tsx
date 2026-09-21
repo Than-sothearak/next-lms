@@ -38,13 +38,26 @@ export const columns: ColumnDef<CourseDocument>[] = [
   },
   {
     accessorKey: "createdAt",
+    cell: ({ row }) => {
+      const value = row.getValue<string | null>("createdAt");
+      const date = value ? new Date(value) : null;
+
+      if (!date || Number.isNaN(date.getTime())) return "—";
+
+      return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(date);
+    },
     header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            CreatedAt
+            Created date
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )

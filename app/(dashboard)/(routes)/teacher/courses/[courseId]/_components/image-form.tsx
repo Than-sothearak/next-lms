@@ -37,15 +37,21 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
 
       if (!uploadedUrl) throw new Error("Image upload did not return a URL");
 
-      setImageUrl(uploadedUrl);
       await axios.patch(`/api/course/${courseId}/image`, { imageFile: uploadedUrl });
-      setUploading(false);
-      toggleEdit();
+      setImageUrl(uploadedUrl);
+      setImageFile(null);
+      setIsEditing(false);
       toast.success("Image updated");
       router.refresh();
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Image not sent!");
+      const responseError = axios.isAxiosError(error) ? error.response?.data : null;
+      toast.error(
+        typeof responseError?.error === "string" ? responseError.error :
+        typeof responseError === "string" && responseError.length < 200 ? responseError :
+        "Could not upload or save the image. Please try again."
+      );
+    } finally {
       setUploading(false);
     }
   }
@@ -54,16 +60,16 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
         Course image
-        <Button variant="ghost" onClick={toggleEdit}>
+        <Button type="button" variant="ghost" onClick={toggleEdit} disabled={uploading}>
           {isEidting && <>Cancel</>}
-          {!isEidting && !initialData.imageUrl && (
+          {!isEidting && !imageUrl && (
             <>
               <PlusCircle className="h-4 w-4 mr-2" />
               Add an image
             </>
           )}
 
-          {!isEidting && initialData.imageUrl && (
+          {!isEidting && imageUrl && (
             <>
               <Pencil className="h-4 w-4 mr-2" />
               Edit image
@@ -72,7 +78,7 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
         </Button>
       </div>
       {!isEidting &&
-        (!initialData.imageUrl ? (
+        (!imageUrl ? (
           <div className="flex items-center justify-center h-60 bg-slate-200 rounded-md gap-x-2">
             <ImageIcon className="h-10 w-10 text-slate-500" />
             <p className="text-muted-foreground">No image</p>
@@ -80,10 +86,10 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
         ) : (
           <div className="relative aspect-video mt-2">
             <Image
-              alt="Uplaod"
+              alt="Course image"
               fill
               className="object-cover rounded-md"
-              src={initialData.imageUrl}
+              src={imageUrl}
             />
           </div>
         ))}
