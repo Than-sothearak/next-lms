@@ -5,20 +5,24 @@ import { CourseNavbar } from '../_components/course.navbar'
 import { CourseSidebar } from '../_components/course-sidebar'
 import { Chapter } from '@/models/Chapter'
 import { UserProgress } from '@/models/UserProgress'
-import { auth } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
+import { cookies } from "next/headers";
+import { getStudentLanguage, getStudentTranslations } from "@/lib/student-translations";
 
 const CourseLayout = async ({
     children, params}: {
         children: React.ReactNode
-        params: { courseId: string, chapterId: string}
+        params: Promise<{ courseId: string }>
     }) => {
     await mongooseConnect();
-    const courseId = params.courseId;
+    const courseId = (await params).courseId;
+    const language = getStudentLanguage((await cookies()).get("student-language")?.value);
+    const labels = getStudentTranslations(language);
 
-    const { userId } = auth();
+    const { userId } = await auth();
 
     const course = JSON.parse(JSON.stringify(await Course.findById({_id: courseId})))
-    const chapters = JSON.parse(JSON.stringify(await Chapter.find({courseId: courseId, isPublished: true})))
+    const chapters = JSON.parse(JSON.stringify(await Chapter.find({courseId: courseId, isPublished: true}).sort({ position: 1 })))
 
   
  
@@ -47,6 +51,8 @@ const CourseLayout = async ({
           course={course}
           chapters={chapters}
           progressCount={progressPercentage}
+          language={language}
+          labels={labels}
           
         />
       </div>
@@ -55,6 +61,7 @@ const CourseLayout = async ({
           course={course}
           chapters={chapters}
           progressCount={progressPercentage}
+          labels={labels}
         />
       </div>
       <main className="md:pl-80 pt-[80px] h-full">

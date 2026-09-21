@@ -62,11 +62,6 @@ export const categoryColumns: ColumnDef<CourseDocument>[] = [
   },
   {
     id: "actions",
-
-  },
-
-  {
-    id: "actions",
     cell: ({ row }) => {
       const { _id } = row.original;
 

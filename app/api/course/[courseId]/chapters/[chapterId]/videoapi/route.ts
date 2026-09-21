@@ -2,18 +2,18 @@ import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { Course } from "@/models/Course";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
     req: Request, 
-    {params}: {params: { courseId : string , chapterId : string}}) {
+    {params}: {params: Promise<{ courseId : string , chapterId : string}>}) {
         await mongooseConnect();
     try{
 
-        const { userId } = auth();
-        const { courseId } = params;
-        const { chapterId } = params;
+        const { userId } = await auth();
+        const { courseId } = await params;
+        const { chapterId } = await params;
         const values = await req.json();
      
         if (!userId) {

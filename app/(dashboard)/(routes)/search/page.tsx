@@ -5,23 +5,28 @@ import { Categories } from './_components/categories'
 import { SearchInput } from '@/components/search-input'
 import { CoursesList } from './_components/courses-list'
 import { getCourses } from '@/actions/get-courses'
-import { auth } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import { redirect } from "next/navigation";
 import { Chapter } from '@/models/Chapter'
 import { UserProgress } from '@/models/UserProgress'
 import { Purchase } from '@/models/Purchase'
+import { cookies } from "next/headers";
+import { getStudentLanguage, getStudentTranslations } from "@/lib/student-translations";
 
 interface SearchPageProps {
-  searchParams: {
+  searchParams: Promise<{
     title: string;
     categoryId: string;
-  }
+  }>
 }
 
 
 const SearchPage = async ({searchParams}: SearchPageProps) => {
   await mongooseConnect()
-  const {userId} = auth();
+  const {userId} = await auth();
+  const labels = getStudentTranslations(
+    getStudentLanguage((await cookies()).get("student-language")?.value)
+  );
 
   if (!userId) {
     return redirect("/");
@@ -29,7 +34,7 @@ const SearchPage = async ({searchParams}: SearchPageProps) => {
   
   const courses = await getCourses({
     userId,
-    ...searchParams
+    ...await searchParams
   })
 
 
@@ -44,9 +49,7 @@ const SearchPage = async ({searchParams}: SearchPageProps) => {
 
   return (
     <>
-    <div className='px-6 pt-6 md:hidden md:mb-0 block'>
-      <SearchInput />
-    </div>
+  
     <div className='p-6'>
       <Categories 
       items={categories}
@@ -56,6 +59,7 @@ const SearchPage = async ({searchParams}: SearchPageProps) => {
       publishedChapterIds={publishedChapters}
       validCompletedChapters={validCompletedChapters}
       purchase={purchase}
+      labels={labels}
       />
     </div>
     </>

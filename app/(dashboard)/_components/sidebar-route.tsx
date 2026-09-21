@@ -4,42 +4,59 @@ import { BarChart, Compass, Layout, List, ListCollapse, ShieldCheck } from "luci
 import { SideBarItem } from "./sidebar-item";
 import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import { getStudentLanguage, getStudentTranslations } from "@/lib/student-translations";
+import { useSyncExternalStore } from "react";
 
-const guestRoutes = [
-  {
-    icon: Layout,
-    label: "My courses",
-    href: "/",
-  },
+const guestRoutes = (labels: ReturnType<typeof getStudentTranslations>) => [
 
   {
     icon: Compass,
-    label: "All courses",
+    label: labels.allCourses,
     href: "/search",
   },
+
+    {
+    icon: Layout,
+    label: labels.myCourses,
+    href: "/",
+  },
+
 ];
-const teacherRoutes = [
+const teacherRoutes = (labels: ReturnType<typeof getStudentTranslations>) => [
   {
     icon: List,
-    label: "Courses",
+    label: labels.courses,
     href: "/teacher/courses",
   },
 
   {
     icon: ListCollapse,
-    label: "Category",
+    label: labels.category,
     href: "/teacher/category",
   },
 
   {
     icon: BarChart,
-    label: "Analytics",
+    label: labels.analytics,
     href: "/teacher/analytics",
   },
 ]
 export const SideBarRoute = () => {
   const { user } = useUser();
   const pathnam = usePathname();
+  const language = useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("student-language-change", onStoreChange);
+      return () => window.removeEventListener("student-language-change", onStoreChange);
+    },
+    () =>
+      getStudentLanguage(
+        document.cookie.match(/(?:^|;\s*)student-language=([^;]+)/)?.[1]
+      ),
+    () => "en"
+  );
+
+  const labels = getStudentTranslations(language);
 
   const role = user?.publicMetadata?.role;
   const canTeach = role === "admin" || role === "teacher";
@@ -47,10 +64,10 @@ export const SideBarRoute = () => {
   
   const isAdminPage = pathnam === "/admin" || pathnam?.startsWith("/admin/");
   const isManagementPage = isAdminPage || isTeacherPage;
-  const routes = canTeach && isManagementPage ? teacherRoutes : guestRoutes;
+  const routes = canTeach && isManagementPage ? teacherRoutes(labels) : guestRoutes(labels);
   const adminRoutes = role === "admin" && isManagementPage ? [
-    { icon: ShieldCheck, label: "Users", href: "/admin/users" },
-    { icon: List, label: "Manage courses", href: "/admin/courses" },
+    { icon: ShieldCheck, label: labels.users, href: "/admin/users" },
+    { icon: List, label: labels.manageCourses, href: "/admin/courses" },
   ] : [];
   return (
     <div className="flex flex-col w-full">

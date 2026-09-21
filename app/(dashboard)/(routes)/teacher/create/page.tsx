@@ -1,4 +1,5 @@
 "use client";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { set, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -81,7 +82,7 @@ const CretePage = () => {
               <Link href="/teacher/courses">
                 <Button variant="ghost" type="button">Cancel</Button>
               </Link>
-              <Button type="submit" disabled={!isValid || isSubmitting}>Continue</Button>
+              <LoadingButton type="submit" loading={isSubmitting} loadingText="Creating..." disabled={!isValid}>Continue</LoadingButton>
             </div>
           </form>
         </Form>

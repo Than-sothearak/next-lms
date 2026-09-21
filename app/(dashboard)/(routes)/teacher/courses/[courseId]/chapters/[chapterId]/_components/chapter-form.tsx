@@ -1,4 +1,5 @@
 "use client";
+import { LoadingButton } from "@/components/ui/loading-button";
 import axios, { toFormData } from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +19,9 @@ import { Button } from "@/components/ui/button";
 import { Pencil, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import ChapterList from "./chapter-list";
+import dynamic from "next/dynamic";
+
+const ChapterList = dynamic(() => import("./chapter-list"), { ssr: false });
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -115,9 +118,9 @@ export const ChapterForm = ({ initialData, courseId, chapters }: ChapterFormProp
               )}
             />
             <div className="flex gap-x-2">
-              <Button type="submit" disabled={!isValid || isSubmitting}>
+              <LoadingButton type="submit" loading={isSubmitting} loadingText="Creating..." disabled={!isValid}>
                 Create
-              </Button>
+              </LoadingButton>
             </div>
           </form>
         </Form>

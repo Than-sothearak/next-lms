@@ -29,6 +29,27 @@ to `teacher` or `admin` to grant access to teacher mode. Users without a role
 are treated as students by the application.
 - Next.js App Router
 
+## Development
+
+Requires Node.js 20.9 or newer. This project uses Next.js 16 and React 19.
+
+```sh
+npm install
+npm run dev
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+Authentication runs in `proxy.ts` using Clerk middleware. Server-side auth,
+route parameters, and request headers use the asynchronous APIs.
+
+The optional UploadThing integration uses v7 and requires `UPLOADTHING_TOKEN`
+from the UploadThing dashboard. Legacy `UPLOADTHING_SECRET` and
+`UPLOADTHING_APP_ID` settings are no longer used. The course editor's S3
+image, attachment, and video uploads continue to use the existing S3 settings.
+
 ## Tech Stack
 
 - Next.js
@@ -72,5 +93,4 @@ AWS_REGION=
 AWS_BUCKET_NAME=
 
 # UploadThing
-UPLOADTHING_SECRET=
-UPLOADTHING_APP_ID=
+UPLOADTHING_TOKEN=

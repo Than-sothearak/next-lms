@@ -8,19 +8,22 @@ import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { useConfettiStore } from "@/hooks/use-confetti-store";
+import type { StudentTranslations } from "@/lib/student-translations";
 
 interface CourseProgressButtonProps {
   chapterId: string;
   courseId: string;
   isCompleted: boolean;
   nextChapterId?: string;
+  labels: StudentTranslations;
 };
 
 export const CourseProgressButton = ({
   chapterId,
   courseId,
   isCompleted,
-  nextChapterId
+  nextChapterId,
+  labels
 }: CourseProgressButtonProps) => {
   const router = useRouter();
   const confetti = useConfettiStore();
@@ -44,10 +47,10 @@ export const CourseProgressButton = ({
         router.push(`/courses/${courseId}/chapters/${nextChapterId}`);
       }
 
-      toast.success("Progress updated");
+      toast.success(labels.progressUpdated);
       router.refresh();
     } catch {
-      toast.error("Something went wrong");
+      toast.error(labels.somethingWentWrong);
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +66,7 @@ export const CourseProgressButton = ({
       variant={isCompleted ? "outline" : "success"}
       className="w-full md:w-auto"
     >
-      {isCompleted ? "Mark as not completed" : "Mark as complete"}
+      {isCompleted ? labels.markIncomplete : labels.markComplete}
       <Icon className="h-4 w-4 ml-2" />
     </Button>
   )

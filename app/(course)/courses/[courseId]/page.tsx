@@ -6,12 +6,12 @@ import { redirect } from 'next/navigation';
 const CourseIdPage = async ({
   params
 }:{
-  params:{ courseId: string}
+  params: Promise<{ courseId: string}>
 }) => {
   await mongooseConnect();
-  const courseId = params.courseId
-  const course = await Course.findById({_id: courseId,})
-  const chapter = await Chapter.find({courseId: courseId, isPublished: true})
+  const courseId = (await params).courseId
+  const course = await Course.findById({_id: courseId})
+  const chapter = await Chapter.find({courseId: courseId, isPublished: true}).sort({ position: 1 })
 
   if (!course && !chapter) {
     return redirect("/");

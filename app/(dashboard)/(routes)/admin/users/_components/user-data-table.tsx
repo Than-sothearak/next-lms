@@ -20,6 +20,8 @@ export function UserDataTable() {
     const response = await fetch(`/api/admin/users?query=${encodeURIComponent(query)}&categoryId=${categoryId}&offset=${currentPage * 10}`);
     if (response.ok) { const data = await response.json(); setUsers(data.users); setCategories(data.categories); }
   }, [search, page, categoryId]);
+  // loadUsers only updates state after its asynchronous network request resolves.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadUsers(); }, [loadUsers]);
 
   function submitSearch(event: React.FormEvent) {

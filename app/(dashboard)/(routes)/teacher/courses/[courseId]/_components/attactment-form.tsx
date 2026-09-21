@@ -7,6 +7,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 
 interface AttactmentFormProps {
@@ -29,6 +30,7 @@ export const AttactmentForm = ({
 }: AttactmentFormProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [fileName, setFileName] = useState<globalThis.File | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [url, setUrl] = useState<any>("");
@@ -39,23 +41,31 @@ export const AttactmentForm = ({
   
   const name = fileName?.name
   async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (uploading || saving) return;
     const files = e.target.files?.[0];
+    if (!files) return;
     setFileName(files || null)
-    if (files) {
+    setUrl("");
+    try {
       
       setUploading(true);
       const formData = new FormData();
       formData.append("file", files);
       
       const res = await axios.post(`/api/upload-attachment/`, formData);
+      if (!res.data.link) throw new Error("Upload did not return a URL");
       setUrl(res.data.link);
+    } catch {
+      toast.error("File upload failed. Please try again.");
+    } finally {
       setUploading(false);
     }
-    setUploading(false);
   }
 
   async function handleOnSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
+    if (!url || uploading || saving) return;
+    setSaving(true);
     const values = {
       url,
       name,
@@ -68,10 +78,10 @@ export const AttactmentForm = ({
       setUrl("");
       setFileName(null);
       router.refresh()
-      setUploading(false);
     } catch (error) {
-      toast.error("Someting went wromg!");
-      setUploading(false);
+      toast.error("Could not save the file. Please try again.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -92,7 +102,7 @@ export const AttactmentForm = ({
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
         Course attactment
-        <Button variant="ghost" onClick={toggleEdit}>
+        <Button type="button" variant="ghost" onClick={toggleEdit} disabled={uploading || saving}>
           {isEidting && <>Cancel</>}
           {!isEidting && (
             <>
@@ -150,6 +160,7 @@ export const AttactmentForm = ({
               className=""
               onChange={handleOnChange}
               type="file"
+              disabled={uploading || saving}
               name="image"
             />
           </label>
@@ -157,15 +168,9 @@ export const AttactmentForm = ({
             <p>16:0 aspect ratio recommend</p>
           </div>
 
-          {!url ? (
-            <Button type="submit" disabled={uploading} className="mt-5">
-              {uploading ? "Uploading..." : "Upload"}
-            </Button>
-          ) : (
-            <Button type="submit" disabled={uploading} className="mt-5">
-              {uploading ? "Uploading..." : "Save"}
-            </Button>
-          )}
+          <LoadingButton type="submit" loading={uploading || saving} loadingText={uploading ? "Uploading..." : "Saving..."} disabled={!url} className="mt-5">
+            Save file
+          </LoadingButton>
         </form>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { clerkClient } from "@clerk/nextjs";
+import { clerkClient } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { mongooseConnect } from "@/lib/mongoose";
@@ -14,11 +14,11 @@ export default async function AdminCoursesPage() {
   const creators = new Map<string, { name: string; email: string }>();
 
   for (let offset = 0; offset < creatorIds.length; offset += 100) {
-    const users = await clerkClient.users.getUserList({
+    const users = await (await clerkClient()).users.getUserList({
       userId: creatorIds.slice(offset, offset + 100),
       limit: 100,
     });
-    for (const user of users) {
+    for (const user of users.data) {
       const email = user.emailAddresses.find((address) => address.id === user.primaryEmailAddressId)?.emailAddress || "";
       creators.set(user.id, {
         name: [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || email || user.id,

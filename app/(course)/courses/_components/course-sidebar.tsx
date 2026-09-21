@@ -2,7 +2,11 @@ import { CourseSidebarItem } from "./course-sidebar-item";
 import { Purchase } from "@/models/Purchase";
 import { CourseProgressPopup } from "@/components/course-progress-popup";
 import { UserProgress } from "@/models/UserProgress";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import type { StudentTranslations } from "@/lib/student-translations";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 
 interface CourseSidebarProps {
   course: {
@@ -18,6 +22,7 @@ interface CourseSidebarProps {
   }[];
 
   progressCount: number;
+  labels: StudentTranslations;
 
 }
 
@@ -25,10 +30,11 @@ export const CourseSidebar = async ({
   chapters,
   course,
   progressCount,
+  labels,
 
 }: CourseSidebarProps) => {
 
-  const { userId } = auth()
+  const { userId } = await auth()
 
   
   const purchase = await Purchase.findOne({
@@ -40,14 +46,17 @@ export const CourseSidebar = async ({
     userId: userId,
   })));
 
-
   return (
     <div className="h-full border-r flex flex-col overflow-y-auto shadow-sm">
+            <Link href="/search" className="p-4">
+              <Button variant="ghost" size="sm"><Home className="mr-2 h-4 w-4" />{labels.home}</Button>
+            </Link>
       <div className="p-8 flex flex-col border-b">
+          
         <h1 className="font-semibold">{course.title}</h1>
         {purchase && (
           <div className="mt-10">
-            <CourseProgressPopup value={progressCount} />
+            <CourseProgressPopup value={progressCount} labels={labels} />
           </div>
         )}
       </div>

@@ -7,6 +7,8 @@ interface InfoCardProps {
   variant?: "default" | "success";
   label: string;
   icon: LucideIcon;
+  courseLabel: string;
+  coursesLabel: string;
 }
 
 export const InfoCard = ({
@@ -14,6 +16,8 @@ export const InfoCard = ({
   icon: Icon,
   numberOfItems,
   label,
+  courseLabel,
+  coursesLabel,
 }: InfoCardProps) => {
   return (
     <div className="border rounded-md flex items-center gap-x-2 p-3">
@@ -26,7 +30,7 @@ export const InfoCard = ({
           {label}
         </p>
         <p className="text-gray-500 text-sm">
-          {numberOfItems} {numberOfItems === 1 ? "Course" : "Courses"}
+          {numberOfItems} {numberOfItems === 1 ? courseLabel : coursesLabel}
         </p>
       </div>
     </div>

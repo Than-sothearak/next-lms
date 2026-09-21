@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { mongooseConnect } from "@/lib/mongoose";
 import { UserProgress } from "@/models/UserProgress";
@@ -6,12 +6,12 @@ import { Chapter } from "@/models/Chapter";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { courseId: string; chapterId: string } }
+  { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
 
     await mongooseConnect()
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     const { isCompleted } = await req.json();
 
     if (!userId) {
@@ -20,16 +20,16 @@ export async function PUT(
     
     const filter = {
         userId: userId,
-        chapterId: params.chapterId
+        chapterId: (await params).chapterId
         
       };
       
       const update = {
         $set: {
           userId: userId,
-          chapterId: params.chapterId,
+          chapterId: (await params).chapterId,
           isCompleted: isCompleted,
-          courseId: params.courseId,
+          courseId: (await params).courseId,
         }
       };
       

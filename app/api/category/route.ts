@@ -1,15 +1,15 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { mongooseConnect } from "../../../lib/mongoose";
 import { NextResponse } from "next/server";
 
 import { Category } from "@/models/Course";
 
-export async function POST(req: Request, res: Response) {
+export async function POST(req: Request) {
 
   await mongooseConnect();
 
     try {
-      const { userId } = auth();
+      const { userId } = await auth();
       const { name } = await req.json();
   
       if (!userId) {

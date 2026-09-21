@@ -6,9 +6,12 @@ const nextConfig = {
     },
   },
   images: {
-    domains: ["thearak-next-lms.s3.amazonaws.com"],
+    remotePatterns: [
+      { protocol: "https", hostname: "thearak-next-lms.s3.amazonaws.com" },
+    ],
   },
   reactStrictMode: false,
+   allowedDevOrigins: ['192.168.100.4', '192.168.168.62', 'skilled-jacqulyn-flamier.ngrok-free.dev'],
 };
 
 export default nextConfig;

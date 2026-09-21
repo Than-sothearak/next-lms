@@ -3,16 +3,20 @@ import { Category, Course } from "@/models/Course";
 import { Chapter } from "@/models/Chapter";
 import { Purchase } from "@/models/Purchase";
 import { UserProgress } from "@/models/UserProgress";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { InfoCard } from "./_components/info-card";
 import { CheckCircle, Clock } from "lucide-react";
 import { CoursesList } from "../search/_components/courses-list";
 import { getProgress } from "@/actions/get-progress";
+import { cookies } from "next/headers";
+import { getStudentLanguage, getStudentTranslations } from "@/lib/student-translations";
 
 export default async function Dashboard() {
   await mongooseConnect();
 
-  const {userId} = auth();
+  const {userId} = await auth();
+  const language = getStudentLanguage((await cookies()).get("student-language")?.value);
+  const labels = getStudentTranslations(language);
 
 
   const findPurchasedCourses = await Purchase.find({
@@ -52,12 +56,16 @@ export default async function Dashboard() {
 
      <InfoCard
         icon={Clock}
-        label="In Progress"
+        label={labels.inProgress}
+        courseLabel={labels.course}
+        coursesLabel={labels.courses}
         numberOfItems={coursesInProgress.length}
      />
      <InfoCard
         icon={CheckCircle}
-        label="Completed"
+        label={labels.completed}
+        courseLabel={labels.course}
+        coursesLabel={labels.courses}
         numberOfItems={completedCourses?.length}
         variant="success"
      />
@@ -67,6 +75,7 @@ export default async function Dashboard() {
       publishedChapterIds={publishedChapters}
       validCompletedChapters={validCompletedChapters}
       purchase={purchase}
+      labels={labels}
     />
   </div>
  

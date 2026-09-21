@@ -9,18 +9,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import type { StudentTranslations } from "@/lib/student-translations";
 
-export const CourseProgressPopup = ({ value }: { value: number }) => (
+export const CourseProgressPopup = ({ value, labels }: { value: number; labels: StudentTranslations }) => (
   <Dialog>
     <DialogTrigger asChild>
       <Button variant="outline" className="w-full justify-between">
-        <span>Course progress</span>
+        <span>{labels.courseProgress}</span>
         <span>{Math.round(value)}%</span>
       </Button>
     </DialogTrigger>
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Course progress</DialogTitle>
+        <DialogTitle>{labels.courseProgress}</DialogTitle>
       </DialogHeader>
       <CourseProgress variant="success" value={value} />
     </DialogContent>

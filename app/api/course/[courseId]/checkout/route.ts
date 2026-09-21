@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { Course } from "@/models/Course";
@@ -9,10 +9,10 @@ import { StripeCustomer } from "@/models/StripeCustomer";
 
 export async function POST(
   req: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   await mongooseConnect();
-  const courseId = params.courseId;
+  const courseId = (await params).courseId;
   try {
     const user = await currentUser();
 
@@ -27,7 +27,7 @@ export async function POST(
 
     const purchase = await Purchase.findOne({
       userId: user.id,
-      courseId: params.courseId,
+      courseId: (await params).courseId,
     });
 
     if (!purchase === null) {

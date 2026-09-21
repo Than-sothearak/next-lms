@@ -11,6 +11,7 @@ const s3Client = new S3Client({
     }
 });
 const bucketName = process.env.AWS_BUCKET_NAME || process.env.S3_BUCKET_NAME;
+const MAX_VIDEO_SIZE = 10 * 1024 * 1024;
 async function uploadFileToS3(file, fileName) {
 	const fileBuffer = file;   
 	const contentType = mime.lookup(`${fileName}`) 
@@ -38,6 +39,12 @@ export async function POST(req) {
 		if(!file) {
 			return NextResponse.json( { error: "File is required."}, { status: 400 } );
 		} 
+		if (file.size > MAX_VIDEO_SIZE) {
+			return NextResponse.json(
+				{ error: "Video file must be 10MB or smaller." },
+				{ status: 413 }
+			);
+		}
 		if (!bucketName) return NextResponse.json({ error: "AWS bucket is not configured." }, { status: 500 });
 		
 		const buffer = Buffer.from(await file.arrayBuffer());

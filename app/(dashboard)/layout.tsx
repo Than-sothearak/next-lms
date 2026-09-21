@@ -2,11 +2,11 @@ import React from "react";
 import SideBar from "./_components/sidebar";
 import { Navbar } from "./_components/navbar";
 import { ensureUserRole } from "@/lib/roles";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
   // Clerk users created without metadata become students automatically.

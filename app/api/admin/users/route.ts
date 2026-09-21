@@ -1,4 +1,4 @@
-import { auth, clerkClient } from "@clerk/nextjs";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCurrentUserRole } from "@/lib/roles";
 import { mongooseConnect } from "@/lib/mongoose";
@@ -7,7 +7,7 @@ import { UserProgress } from "@/models/UserProgress";
 import { Category, Course } from "@/models/Course";
 
 export async function POST(request: Request) {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId || (await getCurrentUserRole()) !== "admin") {
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid account details" }, { status: 400 });
     }
 
-    const user = await clerkClient.users.createUser({
+    const user = await (await clerkClient()).users.createUser({
       username,
       ...(emailAddress ? { emailAddress: [emailAddress] } : {}),
       password,
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId || (await getCurrentUserRole()) !== "admin") {
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }
@@ -43,12 +43,12 @@ export async function GET(request: Request) {
   const query = url.searchParams.get("query") || undefined;
   const categoryId = url.searchParams.get("categoryId") || undefined;
   const offset = Number(url.searchParams.get("offset") || 0);
-  const users = await clerkClient.users.getUserList({ limit: 10, offset, query, orderBy: "-created_at" });
+  const users = await (await clerkClient()).users.getUserList({ limit: 10, offset, query, orderBy: "-created_at" });
   await mongooseConnect();
   const publishedChapterCount = await Chapter.countDocuments({ isPublished: true });
   const courses = await Course.find({ isPublished: true, ...(categoryId ? { categoryId } : {}) }, { _id: 1, title: 1, categoryId: 1 }).lean();
   const categories = await Category.find({}, { _id: 1, name: 1 }).lean();
-  const results = await Promise.all(users.map(async (user) => {
+  const results = await Promise.all(users.data.map(async (user) => {
     const completed = publishedChapterCount === 0 ? 0 : await UserProgress.countDocuments({ userId: user.id, isCompleted: true });
     const courseProgress = await Promise.all(courses.map(async (course) => {
       const courseChapterCount = await Chapter.countDocuments({ courseId: course._id, isPublished: true });

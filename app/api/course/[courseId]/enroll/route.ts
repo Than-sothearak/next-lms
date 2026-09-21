@@ -1,4 +1,4 @@
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Course } from "@/models/Course";
@@ -6,7 +6,7 @@ import { Purchase } from "@/models/Purchase";
 
 export async function POST(
   _request: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   await mongooseConnect();
 
@@ -18,7 +18,7 @@ export async function POST(
     }
 
     const course = await Course.findOne({
-      _id: params.courseId,
+      _id: (await params).courseId,
       isPublished: true,
     });
 

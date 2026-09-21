@@ -5,7 +5,7 @@ import { Attachment } from "@/models/Attachment";
 import { Chapter } from "@/models/Chapter";
 import { Purchase } from "@/models/Purchase";
 import { UserProgress } from "@/models/UserProgress";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { Separator } from "@/components/ui/separator";
 import { File } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -17,17 +17,22 @@ import { Course } from "@/models/Course";
 import { BackButton } from "./_components/back-button";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { cookies } from "next/headers";
+import { getStudentLanguage, getStudentTranslations } from "@/lib/student-translations";
 
 const ChapterPage = async ({
   params,
 }: {
-  params: { chapterId: string; courseId: string };
+  params: Promise<{ chapterId: string; courseId: string }>;
 }) => {
   await mongooseConnect();
-  const { userId } = auth();
+  const { userId } = await auth();
 
-  const chapterId = params.chapterId;
-  const courseId = params.courseId;
+  const chapterId = (await params).chapterId;
+  const courseId = (await params).courseId;
+  const labels = getStudentTranslations(
+    getStudentLanguage((await cookies()).get("student-language")?.value)
+  );
 
   if (!userId) {
     return redirect("/");
@@ -79,26 +84,27 @@ const ChapterPage = async ({
   return (
     <div>
       {userProgress?.isCompleted && (
-        <Banner variant="success" label="You already completed this chapter." />
+        <Banner variant="success" label={labels.alreadyCompleted} />
       )}
       {isLocked && (
         <Banner
           variant="warning"
-          label="You need to purchase this course to watch this chapter."
+          label={labels.purchaseRequired}
         />
       )}
       <div className="flex flex-col max-w-4xl mx-auto pb-20">
         <div className="p-4">
-          <BackButton />
+          <BackButton label={labels.back} />
           <VideoPlayer
-            chapterId={params.chapterId}
+            chapterId={(await params).chapterId}
             title={chapter.title}
             url={chapter.videoUrl}
-            courseId={params.courseId}
+            courseId={(await params).courseId}
             nextChapterId={nextChapter?._id}
             isLocked={isLocked}
             completeOnEnd={completeOnEnd}
             isCompleted={!!userProgress?.isCompleted}
+            labels={labels}
           />
         </div>
         <div>
@@ -106,32 +112,34 @@ const ChapterPage = async ({
             <h2 className="text-2xl font-semibold mb-2">{chapter.title}</h2>
             {/* {!purchase ? (
               <CourseEnrollButton
-                courseId={params.courseId}
+                courseId={(await params).courseId}
                 price={course.price!}
               />
             ) : (
               <CourseProgressButton
-                chapterId={params.chapterId}
-                courseId={params.courseId}
+                chapterId={(await params).chapterId}
+                courseId={(await params).courseId}
                 nextChapterId={nextChapter?._id}
                 isCompleted={!!userProgress?.isCompleted}
+                labels={labels}
               />
             )} */}
             {userProgress?.isCompleted ? <CourseProgressButton
-              chapterId={params.chapterId}
-              courseId={params.courseId}
+              chapterId={(await params).chapterId}
+              courseId={(await params).courseId}
               nextChapterId={nextChapter?._id}
               isCompleted={!!userProgress?.isCompleted}
-            /> : <span className="rounded-md bg-slate-100 px-4 py-2 text-sm text-slate-600">Watch the full video to complete</span>}
+              labels={labels}
+            /> : <span className="rounded-md bg-slate-100 px-4 py-2 text-sm text-slate-600">{labels.watchToComplete}</span>}
           </div>
           <Separator />
           <div>
             <Preview value={chapter.description!} />
           </div>
-          {nextChapter?._id && (
+          {nextChapter?._id && userProgress?.isCompleted && (
             <div className="flex justify-end p-4">
               <Link href={`/courses/${courseId}/chapters/${nextChapter._id}`}>
-                <Button type="button">Next lesson</Button>
+                <Button type="button">{labels.nextLesson}</Button>
               </Link>
             </div>
           )}

@@ -1,7 +1,7 @@
 import { IconBadge } from "@/components/ui/icon.badge";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Course } from "@/models/Course";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import {
   CircleDollarSign,
   File,
@@ -22,11 +22,10 @@ import { courseOwnerFilter } from "@/lib/course-access";
 import { Chapter } from "../../../../../../models/Chapter"
 import { Banner } from "@/components/banner";
 import Actions from "./_components/actions";
-mongooseConnect();
 
-const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
-  const { userId } = auth();
-  const id = params.courseId;
+const CourseIdPage = async ({ params }: { params: Promise<{ courseId: string }> }) => {
+  const { userId } = await auth();
+  const id = (await params).courseId;
 
   if (!userId) redirect("/");
   await mongooseConnect();

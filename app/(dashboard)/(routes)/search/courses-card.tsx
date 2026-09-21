@@ -7,6 +7,7 @@ import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { StudentTranslations } from "@/lib/student-translations";
 
 interface CoursesCardProps {
   _id: number | string;
@@ -27,6 +28,7 @@ interface CoursesCardProps {
     isCompleted: boolean;
   }[];
   purchase?: {};
+  labels: StudentTranslations;
 }
 export default function CoursesCard({
   _id,
@@ -38,6 +40,7 @@ export default function CoursesCard({
   price,
   validCompletedChapters,
   purchase,
+  labels,
 }: CoursesCardProps) {
   const router = useRouter();
   const [isEnrolled, setIsEnrolled] = useState(Boolean(purchase));
@@ -56,13 +59,13 @@ export default function CoursesCard({
       });
 
       if (!response.ok) {
-        throw new Error("Unable to subscribe to this course");
+        throw new Error(labels.unableToSubscribe);
       }
 
       setIsEnrolled(true);
       router.refresh();
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : "Unable to subscribe to this course");
+      window.alert(error instanceof Error ? error.message : labels.unableToSubscribe);
     } finally {
       setIsSubscribing(false);
     }
@@ -88,7 +91,7 @@ export default function CoursesCard({
         <p className="text-sm text-slate-500 mt-2">{category?.name}</p>
         <div className="flex items-center gap-x-2 mt-4 mb-4">
           <BookOpen className="w-4 h-4" />
-          <p className="text-sm text-slate-500">{chapter.length} Chapters</p>
+          <p className="text-sm text-slate-500">{chapter.length} {labels.chapters}</p>
         </div>
       </div>
       {/* {!chapters.isFree ? <p className="text-slate-700">Not free</p> : <p>Free</p>} */}
@@ -102,7 +105,7 @@ export default function CoursesCard({
           />
         </div>
       ) : (
-        <p className="text-md md:text-sm font-medium text-slate-700">Free to join</p>
+        <p className="text-md md:text-sm font-medium text-slate-700">{labels.freeToJoin}</p>
       )}
 
       {!isEnrolled ? (
@@ -112,14 +115,14 @@ export default function CoursesCard({
           disabled={isSubscribing}
           className="text-slate-100 text-md mt-4 p-2 bg-blue-600 text-center rounded-md disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubscribing ? "Subscribing..." : "Subscribe"}
+          {isSubscribing ? labels.subscribing : labels.subscribe}
         </button>
       ) : (
         <Link
           href={`/courses/${_id}`}
           className="text-slate-100 text-md mt-4 p-2 bg-blue-600 text-center rounded-md"
         >
-          Start course
+          {labels.startCourse}
         </Link>
       )}
     </div>

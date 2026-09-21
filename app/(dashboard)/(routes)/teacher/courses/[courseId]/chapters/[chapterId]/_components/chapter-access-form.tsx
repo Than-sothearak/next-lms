@@ -1,4 +1,5 @@
 "use client";
+import { LoadingButton } from "@/components/ui/loading-button";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -125,9 +126,9 @@ export const ChapterAccessForm = ({
               )}
             />
             <div className="flex gap-x-2">
-              <Button type="submit" disabled={!isValid || isSubmitting}>
+              <LoadingButton type="submit" loading={isSubmitting} loadingText="Saving..." disabled={!isValid}>
                 Save
-              </Button>
+              </LoadingButton>
             </div>
           </form>
         </Form>

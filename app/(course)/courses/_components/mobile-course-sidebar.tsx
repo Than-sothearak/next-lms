@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/sheet";
 
 import { CourseSidebar } from "./course-sidebar";
+import type { StudentTranslations } from "@/lib/student-translations";
 
 interface CourseMobileSidebarProps {
   course: {
@@ -20,16 +21,19 @@ interface CourseMobileSidebarProps {
     courseId: string, 
     isFree: boolean,
   }[];
-  progressCount: number
+  progressCount: number;
+  labels: StudentTranslations;
 };
 
 export const CourseMobileSidebar = ({ 
   course,
   chapters,
   progressCount,
+  labels,
 }: CourseMobileSidebarProps) => {
   return (
     <Sheet>
+
       <SheetTrigger className="md:hidden pr-4 hover:opacity-75 transition">
         <Menu />
       </SheetTrigger>
@@ -38,6 +42,7 @@ export const CourseMobileSidebar = ({
           course={course}
           chapters={chapters}
           progressCount={progressCount}
+          labels={labels}
         />
       </SheetContent>
     </Sheet>

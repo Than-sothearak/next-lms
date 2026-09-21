@@ -1,17 +1,17 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import { NextResponse } from "next/server";
 
 import { Category } from "@/models/Course";
 import { mongooseConnect } from "@/lib/mongoose";
 
-export async function DELETE(req: Request,  { params }: { params: { categoryId: string }}) {
+export async function DELETE(req: Request,  { params }: { params: Promise<{ categoryId: string }>}) {
 
   await mongooseConnect();
 
     try {
-      const { userId } = auth();
-      const { categoryId } = params;
+      const { userId } = await auth();
+      const { categoryId } = await params;
   
       if (!userId) {
         return new NextResponse("Unauthorized", { status: 401 });

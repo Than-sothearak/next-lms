@@ -1,6 +1,6 @@
 import { IconBadge } from "@/components/ui/icon.badge";
 import { mongooseConnect } from "@/lib/mongoose";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import {
   ArrowLeft,
   CircleDollarSign,
@@ -24,16 +24,15 @@ import { ChapterVideo } from "./_components/chapter-video-form";
 import { Banner } from "@/components/banner";
 import ChapterActions from "./_components/chapter-actions";
 import { courseOwnerFilter } from "@/lib/course-access";
-mongooseConnect();
 
 const ChapterIdPage = async ({
   params,
 }: {
-  params: { courseId: string; chapterId: string };
+  params: Promise<{ courseId: string; chapterId: string }>;
 }) => {
-  const { userId } = auth();
-  const id = params.courseId;
-  const chapterId = params.chapterId;
+  const { userId } = await auth();
+  const id = (await params).courseId;
+  const chapterId = (await params).chapterId;
   if (!userId) redirect("/");
   await mongooseConnect();
 

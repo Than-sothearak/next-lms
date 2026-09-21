@@ -2,23 +2,23 @@ import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { Course } from "@/models/Course";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 
 export async function PUT(
     req: Request,
-    { params }: { params: { courseId: string } }) {
+    { params }: { params: Promise<{ courseId: string }> }) {
         await mongooseConnect();
     try {
-        const { userId } = auth();
+        const { userId } = await auth();
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 })
         }
-        const { courseId } = params;
+        const { courseId } = await params;
         const list = await req.json();
         
-        const courseOwner = await Course.find({ _id: params.courseId, ...await courseOwnerFilter(userId) },);
+        const courseOwner = await Course.find({ _id: (await params).courseId, ...await courseOwnerFilter(userId) },);
 
         if (courseOwner.length > 0) {
             

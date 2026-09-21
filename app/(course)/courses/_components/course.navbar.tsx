@@ -1,9 +1,9 @@
 
 import { NavbarRoutes } from "@/components/navbar-routes";
 import { CourseMobileSidebar } from "./mobile-course-sidebar";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+
+import { StudentLanguageSwitcher } from "@/components/student-language-switcher";
+import type { StudentLanguage, StudentTranslations } from "@/lib/student-translations";
 
 
 interface CourseNavbarProps {
@@ -18,13 +18,17 @@ interface CourseNavbarProps {
     courseId: string, 
     isFree: boolean,
   }[];
-  progressCount: number
+  progressCount: number;
+  language: StudentLanguage;
+  labels: StudentTranslations;
 };
 
 export const CourseNavbar = ({
   course,
   chapters,
-  progressCount
+  progressCount,
+  language,
+  labels
 
 }: CourseNavbarProps) => {
   return (
@@ -33,11 +37,11 @@ export const CourseNavbar = ({
         course={course}
         chapters={chapters}
         progressCount={progressCount}
+        labels={labels}
  
       />
-      <Link href="/" className="ml-3">
-        <Button variant="ghost" size="sm"><Home className="mr-2 h-4 w-4" />Home</Button>
-      </Link>
+    
+      <StudentLanguageSwitcher language={language} labels={labels} />
       <NavbarRoutes />      
     </div>
   )

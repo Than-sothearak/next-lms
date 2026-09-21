@@ -8,6 +8,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface ChapterVideoProps {
   initialData: {
@@ -28,6 +29,7 @@ export const ChapterVideo = ({
 }: ChapterVideoProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState<null>(null);
   const [videos, setVideos] = useState<any>("");
   const router = useRouter();
@@ -36,16 +38,28 @@ export const ChapterVideo = ({
   };
 
   async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (uploading || saving) return;
     const file = e.target.files?.[0];
     if (!file) return;
+    const maxVideoSize = 10 * 1024 * 1024;
+    if (file.size > maxVideoSize) {
+      toast.error("Video file must be 10MB or smaller.");
+      e.target.value = "";
+      return;
+    }
     try {
       setUploading(true);
+      setVideos("");
       const formData = new FormData();
       formData.append("file", file);
-      const res = await axios.post(`/api/upload-video/`, formData);
+      const res = await axios.post("/api/upload-video", formData);
+      if (!res.data.link) throw new Error("Upload did not return a URL");
       setVideos(res.data.link);
-    } catch {
-      toast.error("Video upload failed");
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.error
+        : undefined;
+      toast.error(message || "Video upload failed");
     } finally {
       setUploading(false);
     }
@@ -53,6 +67,8 @@ export const ChapterVideo = ({
 
   async function handleOnSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
+    if (!videos || uploading || saving) return;
+    setSaving(true);
     const values = {
       videos,
     };
@@ -67,10 +83,10 @@ export const ChapterVideo = ({
       toggleEdit();
       setVideos("");
       router.refresh();
-      setUploading(false);
     } catch (error) {
       toast.error("Video not send!");
-      setUploading(false);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -78,7 +94,7 @@ export const ChapterVideo = ({
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
         Chapter video
-        <Button variant="ghost" onClick={toggleEdit}>
+        <Button type="button" variant="ghost" onClick={toggleEdit} disabled={uploading || saving}>
           {isEidting && <>Cancel</>}
           {!isEidting && !initialData?.videoUrl && (
             <>
@@ -101,13 +117,11 @@ export const ChapterVideo = ({
             <Video className="h-10 w-10 text-slate-500" />
           </div>
         ) : (
-          <div className="relative aspect-video mt-2">
+          <div className="relative mt-2 aspect-video overflow-hidden rounded-md bg-black">
             <video
               src={initialData?.videoUrl}
-              width="1000"
-              height="400"
               controls
-              className="object-cover rounded-md"
+              className="h-full w-full object-contain"
             />
           </div>
         ))}
@@ -130,7 +144,7 @@ export const ChapterVideo = ({
                )}
               </div>
             )}
-            <input disabled={uploading} className="hidden" onChange={handleOnChange} type="file" name="video" accept="video/*" />
+            <input disabled={uploading || saving} className="hidden" onChange={handleOnChange} type="file" name="video" accept="video/*" />
           </label>
           <div className="text-xs text-muted-foreground mt-4">
             <p>16:0 aspect ratio recommend</p>
@@ -138,16 +152,16 @@ export const ChapterVideo = ({
 
           {!videos ? (
             <div className="flex gap-x-4">
-              <Button type="submit" disabled={uploading} className="mt-5">
-                {uploading ? "Uploading..." : "Upload"}
-              </Button>
+              <LoadingButton type="submit" loading={uploading} loadingText="Uploading..." disabled={!videos} className="mt-5">
+                Save video
+              </LoadingButton>
          
             </div>
           ) : (
             <div className="flex items-center gap-x-2">
-              <Button type="submit" disabled={uploading} className="mt-5">
-              {uploading ? "Uploading..." : "Save"}
-            </Button>
+              <LoadingButton type="submit" loading={saving} className="mt-5">
+                Save video
+              </LoadingButton>
            <div className="gap-x2 flex items-center text-xs text-muted-foreground mt-5">
            <p >Click save to save the video</p>
            </div>

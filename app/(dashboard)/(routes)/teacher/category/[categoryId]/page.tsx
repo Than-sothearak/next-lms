@@ -1,11 +1,11 @@
 import { Course } from '@/models/Course';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import React from 'react'
 
-const CategoryPage = async ({params}: {params: {categoryId: string}}) => {
-    const {userId} =  auth();
-    const  categoryId = params.categoryId;
+const CategoryPage = async ({params}: {params: Promise<{categoryId: string}>}) => {
+    const {userId} =  await auth();
+    const  categoryId = (await params).categoryId;
    
     if(!userId) {
       return redirect("/")

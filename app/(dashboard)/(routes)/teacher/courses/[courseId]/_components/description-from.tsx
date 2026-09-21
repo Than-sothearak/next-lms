@@ -1,4 +1,5 @@
 "use client";
+import { LoadingButton } from "@/components/ui/loading-button";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -108,7 +109,7 @@ export const DesciptionForm = ({ initialData, courseId}: DesciptionFormProps) =>
           />
           <div className="flex gap-x-2">
            
-            <Button type="submit" disabled={!isValid || isSubmitting}>Save</Button>
+            <LoadingButton type="submit" loading={isSubmitting} loadingText="Saving..." disabled={!isValid}>Save</LoadingButton>
           </div>
         </form>
       </Form>

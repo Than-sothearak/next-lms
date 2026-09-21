@@ -4,9 +4,9 @@ import React from "react";
 import { categoryColumns } from "./_components/category-columns";
 import { CategoryDataTable } from "./_components/category-data-table";
 
-mongooseConnect();
 
 const CategoryPage = async () => {
+  await mongooseConnect();
   const category = await Category.find({}).sort({ createdAt: -1 });
   const categories = JSON.parse(JSON.stringify(category));
   return (

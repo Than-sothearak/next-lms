@@ -1,6 +1,6 @@
-"user client";
+"use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   DragDropContext,
   Droppable,
@@ -29,19 +29,13 @@ interface ChapterListProps {
   onEdit: (id: string) => void;
 }
 const ChapterList = ({ items, onEdit, onReorder }: ChapterListProps) => {
-  const [isMounted, setMounted] = useState(false);
   const [chapters, setChapters] = useState(items);
+  const [previousItems, setPreviousItems] = useState(items);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
+  // Reset the optimistic order when refreshed server data arrives.
+  if (items !== previousItems) {
+    setPreviousItems(items);
     setChapters(items);
-  }, [items]);
-
-  if (!isMounted) {
-    return null;
   }
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;

@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface ImageFormProps {
   initialData: {
@@ -27,7 +28,7 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
   };
 
   async function handleUpload() {
-    if (!imageFile) return;
+    if (!imageFile || uploading) return;
     setUploading(true); // Indicate that the upload has started
     try {
       const formData = new FormData();
@@ -107,9 +108,9 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
               onChange={(event) => setImageFile(event.target.files?.[0] || null)}
             />
           </label>
-          <Button type="button" onClick={handleUpload} disabled={!imageFile || uploading} className="mt-5">
-            {uploading ? "Uploading..." : "Upload image"}
-          </Button>
+          <LoadingButton type="button" onClick={handleUpload} loading={uploading} loadingText="Uploading..." disabled={!imageFile} className="mt-5">
+            Upload image
+          </LoadingButton>
         </div>
       )}
     </div>

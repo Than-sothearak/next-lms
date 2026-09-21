@@ -1,6 +1,7 @@
 "use client"
 
 import CoursesCard from "../courses-card";
+import type { StudentTranslations } from "@/lib/student-translations";
 
 interface CoursesProps {
     items: {
@@ -34,9 +35,10 @@ interface CoursesProps {
     purchase: {
         courseId: number;
     }[];
+    labels: StudentTranslations;
 }
 
-export const CoursesList = ({items,publishedChapterIds,validCompletedChapters,purchase}: CoursesProps) => {
+export const CoursesList = ({items,publishedChapterIds,validCompletedChapters,purchase,labels}: CoursesProps) => {
 
  const courses = items.map((c) => {
     return c.course
@@ -63,6 +65,7 @@ export const CoursesList = ({items,publishedChapterIds,validCompletedChapters,pu
             purchase={purchase.filter(p => p.courseId === course._id)[0]}
             validCompletedChapters={validCompletedChapters.filter((c: {courseId: number}) => c.courseId === course._id)}
             {...course }
+            labels={labels}
           
             />
             

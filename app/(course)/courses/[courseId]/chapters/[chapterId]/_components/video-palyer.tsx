@@ -8,6 +8,7 @@ import { Loader2, Lock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useConfettiStore } from "@/hooks/use-confetti-store";
+import type { StudentTranslations } from "@/lib/student-translations";
 
 interface VideoPlayerProps {
 
@@ -19,6 +20,7 @@ interface VideoPlayerProps {
   isCompleted: boolean;
   title: string;
   url: string
+  labels: StudentTranslations;
 };
 
 export const VideoPlayer = ({
@@ -31,6 +33,7 @@ export const VideoPlayer = ({
   isCompleted,
   title,
   url,
+  labels,
 }: VideoPlayerProps) => {
   const [isReady, setIsReady] = useState(true);
   const router = useRouter();
@@ -72,7 +75,7 @@ export const VideoPlayer = ({
   }
 
   return (
-    <div className="relative aspect-video">
+    <div className="relative aspect-video w-full overflow-hidden rounded-md">
       {!isReady && !isLocked && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-800">
           <Loader2 className="h-8 w-8 animate-spin text-secondary" />
@@ -81,9 +84,7 @@ export const VideoPlayer = ({
       {isLocked && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-800 flex-col gap-y-2 text-secondary">
           <Lock className="h-8 w-8" />
-          <p className="text-sm">
-            This chapter is locked
-          </p>
+          <p className="text-sm">{labels.lockedChapter}</p>
         </div>
       )}
       {!isLocked && (
@@ -93,11 +94,9 @@ export const VideoPlayer = ({
          onTimeUpdate={onTimeUpdate}
          onSeeking={onSeeking}
          src={url}
-         width="1000"
-         height="400"
          controls
          controlsList="nodownload"
-         className="object-cover rounded-md"
+         className="h-full w-full bg-black object-contain"
        />
       )}
     </div>

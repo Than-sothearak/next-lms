@@ -1,4 +1,4 @@
-import { currentUser, clerkClient } from "@clerk/nextjs";
+import { currentUser, clerkClient } from "@clerk/nextjs/server";
 
 export type UserRole = "admin" | "teacher" | "student";
 
@@ -16,7 +16,7 @@ export async function ensureUserRole() {
 
   const role = user.publicMetadata?.role;
   if (role !== "admin" && role !== "teacher" && role !== "student") {
-    await clerkClient.users.updateUser(user.id, {
+    await (await clerkClient()).users.updateUser(user.id, {
       publicMetadata: { ...user.publicMetadata, role: "student" },
     });
     return "student" as UserRole;
