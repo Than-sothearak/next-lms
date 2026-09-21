@@ -1,14 +1,15 @@
 "use client";
 
 import { CourseProgress } from "@/components/course-progress";
-import { formatPrice } from "@/lib/format";
 import { BookOpen } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface CoursesCardProps {
-  _id: number;
+  _id: number | string;
   title: string;
   categoryId: string;
   imageUrl: string;
@@ -25,7 +26,7 @@ interface CoursesCardProps {
   validCompletedChapters: {
     isCompleted: boolean;
   }[];
-  purchase: {};
+  purchase?: {};
 }
 export default function CoursesCard({
   _id,
@@ -38,13 +39,37 @@ export default function CoursesCard({
   validCompletedChapters,
   purchase,
 }: CoursesCardProps) {
+  const router = useRouter();
+  const [isEnrolled, setIsEnrolled] = useState(Boolean(purchase));
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
   const countCompleted = validCompletedChapters.map((f) => f.isCompleted);
   const count = countCompleted.filter(Boolean).length;
-  const progressPercentage = (count / chapter.length) * 100;
+  const progressPercentage = chapter.length ? (count / chapter.length) * 100 : 0;
+
+  const subscribeToCourse = async () => {
+    setIsSubscribing(true);
+
+    try {
+      const response = await fetch(`/api/course/${_id}/enroll`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to subscribe to this course");
+      }
+
+      setIsEnrolled(true);
+      router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Unable to subscribe to this course");
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   return (
-    <Link
-      href={`/courses/${_id}`}
+    <div
       className="p-4 border border-slate-200 rounded-md flex flex-col justify-between ite"
     >
       <div className="relative aspect-video">
@@ -57,7 +82,9 @@ export default function CoursesCard({
       </div>
 
       <div className="mt-2">
-        <h1 className="text-md">{title}</h1>
+        <Link href={`/courses/${_id}`} className="text-md hover:underline">
+          {title}
+        </Link>
         <p className="text-sm text-slate-500 mt-2">{category?.name}</p>
         <div className="flex items-center gap-x-2 mt-4 mb-4">
           <BookOpen className="w-4 h-4" />
@@ -66,38 +93,35 @@ export default function CoursesCard({
       </div>
       {/* {!chapters.isFree ? <p className="text-slate-700">Not free</p> : <p>Free</p>} */}
 
-      {progressPercentage !== null ? (
+      {isEnrolled ? (
         <div>
-          {purchase && (
-            <CourseProgress
-              variant={progressPercentage === 100 ? "success" : "default"}
-              size="sm"
-              value={progressPercentage}
-            />
-          )}
+          <CourseProgress
+            variant={progressPercentage === 100 ? "success" : "default"}
+            size="sm"
+            value={progressPercentage}
+          />
         </div>
       ) : (
-        <p className="text-md md:text-sm font-medium text-slate-700">
-          {formatPrice(price)}
-        </p>
+        <p className="text-md md:text-sm font-medium text-slate-700">Free to join</p>
       )}
 
-      {!purchase ? (
-        <div>
-          <p className="text-md mt-4">
-           {price.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
-          </p>
-        </div>
+      {!isEnrolled ? (
+        <button
+          type="button"
+          onClick={subscribeToCourse}
+          disabled={isSubscribing}
+          className="text-slate-100 text-md mt-4 p-2 bg-blue-600 text-center rounded-md disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSubscribing ? "Subscribing..." : "Subscribe"}
+        </button>
       ) : (
-        <div>
-          <p className="text-slate-100 text-md mt-4 p-2 bg-blue-600 text-center rounded-md">
-            Your course
-          </p>
-        </div>
+        <Link
+          href={`/courses/${_id}`}
+          className="text-slate-100 text-md mt-4 p-2 bg-blue-600 text-center rounded-md"
+        >
+          Start course
+        </Link>
       )}
-    </Link>
+    </div>
   );
 }

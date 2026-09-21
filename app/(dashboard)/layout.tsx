@@ -1,11 +1,20 @@
 import React from "react";
 import SideBar from "./_components/sidebar";
 import { Navbar } from "./_components/navbar";
+import { ensureUserRole } from "@/lib/roles";
+import { auth } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
+  const { userId } = auth();
+  if (!userId) redirect("/sign-in");
+
+  // Clerk users created without metadata become students automatically.
+  // Admins can later promote them by changing publicMetadata.role in Clerk.
+  await ensureUserRole();
   return (
     <div className="h-full">
-   
+
       <div className="hidden md:flex h-full w-56 flex-col fixed inset-y-0 z-50">
        <SideBar />
       </div>

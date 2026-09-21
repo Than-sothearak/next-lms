@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Course } from "@/models/Course";
 import { auth } from "@clerk/nextjs";
@@ -17,7 +18,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", {status: 401})
         }
         
-            const updateCourse = await Course.updateOne({_id: courseId, userId: userId}, {imageUrl: values.imageFile} )
+            const updateCourse = await Course.updateOne({_id: courseId, ...await courseOwnerFilter(userId)}, {imageUrl: values.imageFile} )
             return NextResponse.json(updateCourse);
        
         

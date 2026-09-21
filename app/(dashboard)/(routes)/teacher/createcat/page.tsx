@@ -45,7 +45,7 @@ const CreateCatPage= () => {
       router.refresh();
     } catch (err)
     {
-      toast.error(err.response.data)
+      toast.error(axios.isAxiosError(err) && typeof err.response?.data === "string" ? err.response.data : "Could not create category")
     }
   }
 

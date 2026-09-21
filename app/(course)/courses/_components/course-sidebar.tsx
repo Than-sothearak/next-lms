@@ -1,6 +1,6 @@
 import { CourseSidebarItem } from "./course-sidebar-item";
 import { Purchase } from "@/models/Purchase";
-import { CourseProgress } from "@/components/course-progress";
+import { CourseProgressPopup } from "@/components/course-progress-popup";
 import { UserProgress } from "@/models/UserProgress";
 import { auth } from "@clerk/nextjs";
 
@@ -47,7 +47,7 @@ export const CourseSidebar = async ({
         <h1 className="font-semibold">{course.title}</h1>
         {purchase && (
           <div className="mt-10">
-            <CourseProgress variant="success" value={progressCount} />
+            <CourseProgressPopup value={progressCount} />
           </div>
         )}
       </div>

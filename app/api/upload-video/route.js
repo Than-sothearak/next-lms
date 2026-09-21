@@ -4,19 +4,19 @@ import mime from "mime-types";
 
 
 const s3Client = new S3Client({
-    region: "ap-southeast-1",
+    region: process.env.AWS_REGION || "ap-southeast-1",
     credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY || "",
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY || "",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY || "",
     }
 });
-const bucketName = "thearak-next-lms";
+const bucketName = process.env.AWS_BUCKET_NAME || process.env.S3_BUCKET_NAME;
 async function uploadFileToS3(file, fileName) {
 	const fileBuffer = file;   
 	const contentType = mime.lookup(`${fileName}`) 
 
 	const params = {
-		Bucket: process.env.S3_BUCKET_NAME,
+		Bucket: bucketName,
 		Key: `Video/${fileName}`,
 		Body: fileBuffer,
 		ACL: 'public-read',
@@ -38,6 +38,7 @@ export async function POST(req) {
 		if(!file) {
 			return NextResponse.json( { error: "File is required."}, { status: 400 } );
 		} 
+		if (!bucketName) return NextResponse.json({ error: "AWS bucket is not configured." }, { status: 500 });
 		
 		const buffer = Buffer.from(await file.arrayBuffer());
 		const fileName = await uploadFileToS3(buffer, file.name);

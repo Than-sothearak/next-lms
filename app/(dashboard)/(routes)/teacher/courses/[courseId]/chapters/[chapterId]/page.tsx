@@ -23,6 +23,7 @@ import { ChapterAccessForm } from "./_components/chapter-access-form";
 import { ChapterVideo } from "./_components/chapter-video-form";
 import { Banner } from "@/components/banner";
 import ChapterActions from "./_components/chapter-actions";
+import { courseOwnerFilter } from "@/lib/course-access";
 mongooseConnect();
 
 const ChapterIdPage = async ({
@@ -33,16 +34,18 @@ const ChapterIdPage = async ({
   const { userId } = auth();
   const id = params.courseId;
   const chapterId = params.chapterId;
+  if (!userId) redirect("/");
+  await mongooseConnect();
 
   const courseId = JSON.parse(
-    JSON.stringify(await Course.findById({ _id: id }))
+    JSON.stringify(await Course.findOne({ _id: id, ...await courseOwnerFilter(userId) }))
   );
 
   const chapter = JSON.parse(
-    JSON.stringify(await Chapter.findById({ _id: chapterId }))
+    JSON.stringify(await Chapter.findOne({ _id: chapterId, courseId: id }))
   );
 
-  if (!userId) {
+  if (!courseId || !chapter) {
     redirect("/");
   }
 

@@ -30,14 +30,13 @@ export const getChapter = async ({
     }
 
     let attachments: typeof Attachment[] = [];
-    let nextChapter: typeof Chapter | null = null;
 
     if (purchase) {
       attachments = await Attachment.find({course: courseId})
     }
 
 
-     nextChapter = await Chapter.find({courseId: courseId, isPublished: true, position: { $gt: position }}).sort({position: -1})
+    const nextChapter = await Chapter.findOne({courseId: courseId, isPublished: true, position: { $gt: position }}).sort({position: 1})
 
     const userProgress = await UserProgress.find({userId: userId, chapterId: chapterId})
     return {

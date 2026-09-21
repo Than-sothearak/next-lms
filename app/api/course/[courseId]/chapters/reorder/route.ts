@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { Course } from "@/models/Course";
@@ -17,12 +18,12 @@ export async function PUT(
         const { courseId } = params;
         const list = await req.json();
         
-        const courseOwner = await Course.find({ _id: params.courseId, userId: userId },);
+        const courseOwner = await Course.find({ _id: params.courseId, ...await courseOwnerFilter(userId) },);
 
         if (courseOwner.length > 0) {
             
             for (let item of list.list) {
-                await Chapter.updateOne({ _id: item._id},  {position: item.position})
+                await Chapter.updateOne({ _id: item._id, courseId },  {position: item.position})
             }
 
             return NextResponse.json("Successed", {status: 200});

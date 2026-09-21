@@ -6,6 +6,7 @@ import { columns } from './_components/columns'
 import { auth } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 import { Course } from '@/models/Course'
+import { courseOwnerFilter } from '@/lib/course-access'
 
 import { mongooseConnect } from '@/lib/mongoose'
 mongooseConnect();
@@ -16,7 +17,8 @@ const CoursesPage = async () => {
     return redirect("/")
   }
 
-  const course = await Course.find({userId: userId}).sort({createdAt: -1})
+  await mongooseConnect();
+  const course = await Course.find(await courseOwnerFilter(userId)).sort({createdAt: -1})
   const courses = JSON.parse(JSON.stringify(course))
   return (
     <>

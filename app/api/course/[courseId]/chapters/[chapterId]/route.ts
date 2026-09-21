@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { Category } from "@/models/Course";
@@ -22,13 +23,13 @@ export async function PATCH(
     }
     const courseOwner = await Course.find({
       _id: courseId,
-      userId: userId,
+      ...await courseOwnerFilter(userId),
     });
     if (courseOwner.length > 0) {    
 
       const updateChapter = await Chapter.updateOne(
-        { _id: chapterId },
-        { ...values }
+        { _id: chapterId, courseId },
+        { $set: Object.fromEntries(["title", "description", "videoUrl", "isFree"].filter((key) => key in values).map((key) => [key, values[key]])) }
       );
 
       return NextResponse.json(updateChapter);
@@ -56,12 +57,12 @@ export async function DELETE(
     }
     const courseOwner = await Course.find({
       _id: courseId,
-      userId: userId,
+      ...await courseOwnerFilter(userId),
     });
     if (courseOwner.length > 0) {
       
       const deleteChapter = await Chapter.deleteOne(
-        { _id: chapterId },
+        { _id: chapterId, courseId },
       );
       await Course.updateOne({_id: courseId}, {$pull: { chapter: chapterId  }} )
 

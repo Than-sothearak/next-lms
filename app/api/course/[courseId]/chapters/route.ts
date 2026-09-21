@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { Course } from "@/models/Course";
@@ -17,19 +18,13 @@ export async function POST(
         }
         const { courseId } = params;
         const values = await req.json();
-        const courseOwner = await Course.find({ _id: params.courseId, userId: userId },);
+        const courseOwner = await Course.find({ _id: params.courseId, ...await courseOwnerFilter(userId) },);
 
         if (courseOwner.length > 0) {
 
-            interface ChapterProps {
+            const findLastChapter = await Chapter.findOne({ courseId: courseId }).sort({ position: -1 })
 
-                _id: number;
-                position: number;
-
-            }
-            const findLastChapter: ChapterProps | null = await Chapter.findOne({ courseId: courseId }).sort({ position: -1 })
-
-            const newPostion = findLastChapter ? findLastChapter.position + 1 : 0;
+            const newPostion = (findLastChapter?.position ?? -1) + 1;
 
             const createChapter = await Chapter.create({ courseId: courseId, position: newPostion, title: values.title })
 

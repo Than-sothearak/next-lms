@@ -16,13 +16,10 @@ interface AttactmentFormProps {
   courseId: string;
   attachmentsProps: {
     _id: string,
-    url: string
-  };
+    url: string;
+    name: string;
+  }[];
   attachments: string;
-}
-interface FileProps {
-  name: string,
-  url: string
 }
 export const AttactmentForm = ({
   course,
@@ -32,7 +29,7 @@ export const AttactmentForm = ({
 }: AttactmentFormProps) => {
   const [isEidting, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState<FileProps | null>(null)
+  const [fileName, setFileName] = useState<globalThis.File | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [url, setUrl] = useState<any>("");
   const router = useRouter();
@@ -43,7 +40,7 @@ export const AttactmentForm = ({
   const name = fileName?.name
   async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files?.[0];
-    setFileName(files)
+    setFileName(files || null)
     if (files) {
       
       setUploading(true);
@@ -69,7 +66,7 @@ export const AttactmentForm = ({
       toast.success("File updated");
       toggleEdit();
       setUrl("");
-      setFileName("");
+      setFileName(null);
       router.refresh()
       setUploading(false);
     } catch (error) {
@@ -85,7 +82,7 @@ export const AttactmentForm = ({
       toast.success("Attachment deleted");
       router.refresh();
     } catch (error){
-      toast.error(error.response.data);
+      toast.error(axios.isAxiosError(error) && typeof error.response?.data === "string" ? error.response.data : "Could not delete attachment");
     } finally {
       setDeletingId(null);
     }

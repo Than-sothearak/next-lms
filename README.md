@@ -20,6 +20,13 @@ A modern Learning Management System built with Next.js, React, Tailwind CSS, Mon
 - Validation with Zod
 - MongoDB and Mongoose
 - Responsive design
+
+## Clerk roles
+
+New Clerk users are automatically assigned the least-privileged `student` role
+when they first open the app. Set `publicMetadata.role` in the Clerk Dashboard
+to `teacher` or `admin` to grant access to teacher mode. Users without a role
+are treated as students by the application.
 - Next.js App Router
 
 ## Tech Stack

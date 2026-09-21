@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Attachment } from "@/models/Attachment";
 import { Course } from "@/models/Course";
@@ -18,11 +19,11 @@ export async function DELETE(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const courseOwner = await Course.find({ _id: params.courseId, userId: userId },);
+        const courseOwner = await Course.find({ _id: params.courseId, ...await courseOwnerFilter(userId) },);
 
         if (courseOwner.length > 0 ) {
             const attachment = await Attachment.deleteOne({
-                _id: params.attachmentId
+                _id: params.attachmentId, courses: params.courseId
             });
 
             return NextResponse.json(attachment);

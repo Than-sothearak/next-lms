@@ -36,17 +36,19 @@ export const ChapterVideo = ({
   };
 
   async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files?.[0];
-
-    if (files) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
       setUploading(true);
       const formData = new FormData();
-      formData.append("file", files);
+      formData.append("file", file);
       const res = await axios.post(`/api/upload-video/`, formData);
       setVideos(res.data.link);
+    } catch {
+      toast.error("Video upload failed");
+    } finally {
       setUploading(false);
     }
-    setUploading(false);
   }
 
   async function handleOnSubmit(e: React.SyntheticEvent) {
@@ -128,13 +130,7 @@ export const ChapterVideo = ({
                )}
               </div>
             )}
-            <input
-              disabled={uploading}
-              className="hidden"
-              onChange={handleOnChange}
-              type="file"
-              name="video"
-            />
+            <input disabled={uploading} className="hidden" onChange={handleOnChange} type="file" name="video" accept="video/*" />
           </label>
           <div className="text-xs text-muted-foreground mt-4">
             <p>16:0 aspect ratio recommend</p>

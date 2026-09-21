@@ -8,14 +8,12 @@ import { InfoCard } from "./_components/info-card";
 import { CheckCircle, Clock } from "lucide-react";
 import { CoursesList } from "../search/_components/courses-list";
 import { getProgress } from "@/actions/get-progress";
-import { getCourses } from "@/actions/get-courses";
 
 export default async function Dashboard() {
   await mongooseConnect();
 
   const {userId} = auth();
 
-  console.log(userId)
 
   const findPurchasedCourses = await Purchase.find({
     userId,  
@@ -51,7 +49,7 @@ export default async function Dashboard() {
 
     <div className="p-6 space-y-4">
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {userId}
+
      <InfoCard
         icon={Clock}
         label="In Progress"

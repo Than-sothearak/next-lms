@@ -18,6 +18,7 @@ import { PriceForm } from "./_components/price-from";
 import { AttactmentForm } from "./_components/attactment-form";
 import { Attachment } from "@/models/Attachment";
 import { ChapterForm } from "./chapters/[chapterId]/_components/chapter-form";
+import { courseOwnerFilter } from "@/lib/course-access";
 import { Chapter } from "../../../../../../models/Chapter"
 import { Banner } from "@/components/banner";
 import Actions from "./_components/actions";
@@ -27,7 +28,10 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
   const { userId } = auth();
   const id = params.courseId;
 
-  const courses = await Course.findById({ _id: id });
+  if (!userId) redirect("/");
+  await mongooseConnect();
+  const courses = await Course.findOne({ _id: id, ...await courseOwnerFilter(userId) });
+  if (!courses) redirect("/teacher/courses");
   const category = await Category.find();
   const course = JSON.parse(JSON.stringify(courses));
   const getAttachments = await Attachment.find({ courses: id }).populate("courses");

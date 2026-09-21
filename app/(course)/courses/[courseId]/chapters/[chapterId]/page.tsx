@@ -14,6 +14,9 @@ import { VideoPlayer } from "./_components/video-palyer";
 import { CourseProgressButton } from "./_components/course-progress-button";
 import { CourseEnrollButton } from "./_components/course-entroll-button";
 import { Course } from "@/models/Course";
+import { BackButton } from "./_components/back-button";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const ChapterPage = async ({
   params,
@@ -48,16 +51,15 @@ const ChapterPage = async ({
     chapterId: chapterId,
   });
 
+  const orderedChapters = await Chapter.find({
+    courseId,
+    isPublished: true,
+  }).sort({ position: 1, createdAt: 1 });
+  const currentChapterIndex = orderedChapters.findIndex(
+    (item) => String(item._id) === String(chapterId)
+  );
   const nextChapter = JSON.parse(
-    JSON.stringify(
-      await Chapter.findOne({
-        courseId: courseId,
-        isPublished: true,
-        position: {
-          $gt: chapter?.position,
-        },
-      }).sort({ position: 1 })
-    )
+    JSON.stringify(orderedChapters[currentChapterIndex + 1] || null)
   );
 
   const isLocked = !chapter.isFree && !purchase;
@@ -87,6 +89,7 @@ const ChapterPage = async ({
       )}
       <div className="flex flex-col max-w-4xl mx-auto pb-20">
         <div className="p-4">
+          <BackButton />
           <VideoPlayer
             chapterId={params.chapterId}
             title={chapter.title}
@@ -95,6 +98,7 @@ const ChapterPage = async ({
             nextChapterId={nextChapter?._id}
             isLocked={isLocked}
             completeOnEnd={completeOnEnd}
+            isCompleted={!!userProgress?.isCompleted}
           />
         </div>
         <div>
@@ -113,17 +117,24 @@ const ChapterPage = async ({
                 isCompleted={!!userProgress?.isCompleted}
               />
             )} */}
-            <CourseProgressButton
+            {userProgress?.isCompleted ? <CourseProgressButton
               chapterId={params.chapterId}
               courseId={params.courseId}
               nextChapterId={nextChapter?._id}
               isCompleted={!!userProgress?.isCompleted}
-            />
+            /> : <span className="rounded-md bg-slate-100 px-4 py-2 text-sm text-slate-600">Watch the full video to complete</span>}
           </div>
           <Separator />
           <div>
             <Preview value={chapter.description!} />
           </div>
+          {nextChapter?._id && (
+            <div className="flex justify-end p-4">
+              <Link href={`/courses/${courseId}/chapters/${nextChapter._id}`}>
+                <Button type="button">Next lesson</Button>
+              </Link>
+            </div>
+          )}
           {!!attachments.length && (
             <>
               <Separator />

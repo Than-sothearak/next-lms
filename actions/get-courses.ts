@@ -30,11 +30,11 @@ export const getCourses = async ({
     await mongooseConnect()
     try {
 
-        const courses = await Course.find(
-            {
-                isPublished: true,
-              
-            }).sort({ createdAt: -1 })
+        const courses = await Course.find({
+            isPublished: true,
+            ...(categoryId ? { categoryId } : {}),
+            ...(title ? { title: { $regex: title, $options: "i" } } : {}),
+        }).sort({ createdAt: -1 })
 
         const fullCourses = []
         for (let course of courses) {

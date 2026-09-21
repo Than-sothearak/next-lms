@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { useState } from "react";
+import { SyntheticEvent, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Loader2, Lock } from "lucide-react";
@@ -13,9 +13,10 @@ interface VideoPlayerProps {
 
   courseId: string;
   chapterId: string;
-  nextChapterId?: object;
+  nextChapterId?: string;
   isLocked: boolean;
   completeOnEnd: boolean;
+  isCompleted: boolean;
   title: string;
   url: string
 };
@@ -27,14 +28,29 @@ export const VideoPlayer = ({
   nextChapterId,
   isLocked,
   completeOnEnd,
+  isCompleted,
   title,
   url,
 }: VideoPlayerProps) => {
   const [isReady, setIsReady] = useState(true);
   const router = useRouter();
   const confetti = useConfettiStore();
+  const maxWatchedTime = useRef(0);
+  const hasAdvanced = useRef(false);
+
+  const onTimeUpdate = (event: SyntheticEvent<HTMLVideoElement>) => {
+    if (!isCompleted) maxWatchedTime.current = Math.max(maxWatchedTime.current, event.currentTarget.currentTime);
+  };
+
+  const onSeeking = (event: SyntheticEvent<HTMLVideoElement>) => {
+    if (!isCompleted && event.currentTarget.currentTime > maxWatchedTime.current + 0.5) {
+      event.currentTarget.currentTime = maxWatchedTime.current;
+    }
+  };
 
   const onEnd = async () => {
+    if (hasAdvanced.current) return;
+    hasAdvanced.current = true;
     try {
       if (completeOnEnd) {
         await axios.put(`/api/course/${courseId}/chapters/${chapterId}/progress`, {
@@ -48,12 +64,9 @@ export const VideoPlayer = ({
         toast.success("Progress updated");
         router.refresh();
 
-        if (nextChapterId) {
-          router.push(`/courses/${courseId}/chapters/${nextChapterId}`)
-          router.refresh();
-        }
       }
     } catch {
+      hasAdvanced.current = false;
       toast.error("Something went wrong");
     }
   }
@@ -77,10 +90,13 @@ export const VideoPlayer = ({
          <video
          onCanPlay={() => setIsReady(true)}
          onEnded={onEnd}
+         onTimeUpdate={onTimeUpdate}
+         onSeeking={onSeeking}
          src={url}
          width="1000"
          height="400"
          controls
+         controlsList="nodownload"
          className="object-cover rounded-md"
        />
       )}

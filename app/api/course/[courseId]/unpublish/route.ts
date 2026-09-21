@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Course } from "@/models/Course";
 import { auth } from "@clerk/nextjs";
@@ -15,7 +16,7 @@ export async function PATCH(
         }
         const { courseId } = params;
 
-        const publishedCourse = await Course.updateOne({ _id: courseId, userId: userId }, {
+        const publishedCourse = await Course.updateOne({ _id: courseId, ...await courseOwnerFilter(userId) }, {
             isPublished: false,
         })
         return NextResponse.json(publishedCourse);

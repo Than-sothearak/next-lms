@@ -6,8 +6,8 @@ import mime from "mime-types";
 const s3Client = new S3Client({
     region: "ap-southeast-1",
     credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY || "",
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
     }
 });
 const bucketName = "thearak-next-lms";
@@ -16,7 +16,7 @@ async function uploadFileToS3(file, fileName) {
 	const contentType = mime.lookup(`${fileName}`) 
 
 	const params = {
-		Bucket: process.env.S3_BUCKET_NAME,
+        Bucket: process.env.AWS_BUCKET_NAME,
 		Key: `Image/${fileName}`,
 		Body: fileBuffer,
 		ACL: 'public-read',
@@ -43,13 +43,13 @@ export async function POST(req) {
 	
 	
 		const buffer = Buffer.from(await file.arrayBuffer());
-		const fileName = await uploadFileToS3(buffer, file.name);
+        const fileName = await uploadFileToS3(buffer, newFilename);
 		
 		
 		const link = `https://${bucketName}.s3.amazonaws.com/Image/${fileName}`;
 		links.push(link);
 		return NextResponse.json({ success: true, link});
 	} catch (error) {
-		return NextResponse.json({ error });
+		return NextResponse.json({ error: error instanceof Error ? error.message : "Upload failed" }, { status: 500 });
 	}
 }

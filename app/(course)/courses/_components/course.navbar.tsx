@@ -1,6 +1,9 @@
 
 import { NavbarRoutes } from "@/components/navbar-routes";
 import { CourseMobileSidebar } from "./mobile-course-sidebar";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 
 
 interface CourseNavbarProps {
@@ -32,6 +35,9 @@ export const CourseNavbar = ({
         progressCount={progressCount}
  
       />
+      <Link href="/" className="ml-3">
+        <Button variant="ghost" size="sm"><Home className="mr-2 h-4 w-4" />Home</Button>
+      </Link>
       <NavbarRoutes />      
     </div>
   )

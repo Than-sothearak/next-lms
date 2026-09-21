@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Course } from "@/models/Course";
 import { auth } from "@clerk/nextjs";
@@ -18,13 +19,13 @@ export async function PATCH(
     }
     const courseOwner = await Course.find({
       _id: courseId,
-      userId: userId,
+      ...await courseOwnerFilter(userId),
     });
 
     if (courseOwner.length > 0) {
       const updateCourse = await Course.updateOne(
-        { _id: courseId, userId: userId },
-        { ...values }
+        { _id: courseId, ...await courseOwnerFilter(userId) },
+        { $set: Object.fromEntries(["title", "description", "imageUrl", "price", "categoryId"].filter((key) => key in values).map((key) => [key, values[key]])) }
       );
       return NextResponse.json(updateCourse);
     } else {
@@ -51,13 +52,13 @@ export async function DELETE(
 
     const courseOwner = await Course.find({
       _id: courseId,
-      userId: userId,
+      ...await courseOwnerFilter(userId),
     });
 
     if (courseOwner.length > 0) {
       const updateCourse = await Course.deleteOne({
         _id: courseId,
-        userId: userId,
+        ...await courseOwnerFilter(userId),
       });
       return NextResponse.json(updateCourse);
     } else {

@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { Course } from "@/models/Course";
@@ -15,7 +16,7 @@ export async function PATCH(
         }
         const { courseId } = params;
         const { chapterId } = params;
-        const courseOwner = await Course.find({ _id: params.courseId, userId: userId },);
+        const courseOwner = await Course.find({ _id: params.courseId, ...await courseOwnerFilter(userId) },);
 
         if (courseOwner.length > 0) {
 
@@ -23,7 +24,7 @@ export async function PATCH(
             const publishedChapter = await Chapter.updateOne({ _id: chapterId, courseId: courseId }, {
                 isPublished: true,
             })
-            await Course.updateOne({_id: courseId, userId: userId}, {$addToSet : {chapter: chapterId}})
+            await Course.updateOne({_id: courseId, ...await courseOwnerFilter(userId)}, {$addToSet : {chapter: chapterId}})
             return NextResponse.json(publishedChapter);
 
         } else {

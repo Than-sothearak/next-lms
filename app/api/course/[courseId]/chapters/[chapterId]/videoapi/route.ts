@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Chapter } from "@/models/Chapter";
 import { Course } from "@/models/Course";
@@ -18,9 +19,9 @@ export async function PATCH(
         if (!userId) {
             return new NextResponse("Unauthorized", {status: 401})
         }
-        const courseOwner = await Course.find({ _id: courseId, userId: userId },);
+        const courseOwner = await Course.find({ _id: courseId, ...await courseOwnerFilter(userId) },);
         if (courseOwner.length > 0) {
-            const updateChapter = await Chapter.updateOne({_id: chapterId}, {videoUrl: values.videos } )
+            const updateChapter = await Chapter.updateOne({_id: chapterId, courseId}, {videoUrl: values.videos } )
             return NextResponse.json(updateChapter);
         }else {
             return new NextResponse("Unauthorized", { status: 401 });

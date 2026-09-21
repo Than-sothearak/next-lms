@@ -1,3 +1,4 @@
+import { courseOwnerFilter } from "@/lib/course-access";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Attachment } from "@/models/Attachment";
 import { Course } from "@/models/Course";
@@ -20,7 +21,7 @@ export async function POST(
 
     const courseOwner = await Course.find({
       _id: params.courseId,
-      userId: userId,
+      ...await courseOwnerFilter(userId),
     });
 
     if (courseOwner.length > 0) {

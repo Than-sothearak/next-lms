@@ -1,6 +1,6 @@
 "use client";
 
-import { UserButton } from '@clerk/nextjs';
+import { UserButton, useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
 import React from 'react'
 import { Button } from './ui/button';
@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { SearchInput } from './search-input';
 
 export const NavbarRoutes = () => {
+    const { user } = useUser();
 
     const pathname = usePathname();
 
@@ -16,6 +17,8 @@ export const NavbarRoutes = () => {
     const isPlayerPage = pathname?.startsWith("/chapter");
     const isSearchPage = pathname === "/search";
     const studentPage = pathname?.startsWith("/teacher");
+    const role = user?.publicMetadata?.role;
+    const canTeach = role === "admin" || role === "teacher";
   return (
     <>
     {isSearchPage && (
@@ -30,13 +33,13 @@ export const NavbarRoutes = () => {
              <LogOut className='h-4 w-4 mr-2' />
              Exit
            </Button></Link>
-        ): (
+        ): canTeach ? (
             <Link href="/teacher/courses">
                 <Button size="sm" variant="ghost">
                     Teacher mode
                 </Button>
             </Link>
-        )
+        ) : null
     }
         <UserButton afterSignOutUrl='/'/>
        
