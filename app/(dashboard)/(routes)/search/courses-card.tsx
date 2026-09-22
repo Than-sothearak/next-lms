@@ -14,13 +14,16 @@ interface CoursesCardProps {
   title: string;
   categoryId: string;
   imageUrl: string;
-  chapter: string[];
+  chapter: { _id: string; updatedAt?: string | Date }[];
   price: number;
+  updatedAt?: string | Date;
+  createdAt?: string | Date;
+  chaptersForCourse: { updatedAt?: string | Date; createdAt?: string | Date }[];
 
   category: {
     name: string;
   };
-  chapters: {
+  chapters?: {
     isFree: boolean;
   };
 
@@ -38,6 +41,9 @@ export default function CoursesCard({
   imageUrl,
   chapters,
   price,
+  updatedAt,
+  createdAt,
+  chaptersForCourse,
   validCompletedChapters,
   purchase,
   labels,
@@ -49,6 +55,16 @@ export default function CoursesCard({
   const countCompleted = validCompletedChapters.map((f) => f.isCompleted);
   const count = countCompleted.filter(Boolean).length;
   const progressPercentage = chapter.length ? (count / chapter.length) * 100 : 0;
+  const recentWindow = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const isRecent = (date?: string | Date) => {
+    if (!date) return false;
+    const timestamp = new Date(date).getTime();
+    return Number.isFinite(timestamp) && timestamp <= now && now - timestamp < recentWindow;
+  };
+  const isNewCourse = isRecent(createdAt);
+  const hasNewLesson = chaptersForCourse.some((chapter) => isRecent(chapter.createdAt));
+  const hasLessonUpdate = chaptersForCourse.some((chapter) => !isRecent(chapter.createdAt) && isRecent(chapter.updatedAt));
 
   const subscribeToCourse = async () => {
     setIsSubscribing(true);
@@ -82,6 +98,13 @@ export default function CoursesCard({
           className="object-cover rounded-md"
           src={imageUrl}
         />
+        {(isNewCourse || hasNewLesson || hasLessonUpdate) && (
+          <div className="absolute left-2 top-2 flex flex-wrap gap-1">
+            {isNewCourse && <span className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white">{labels.newCourse}</span>}
+            {hasNewLesson && <span className="rounded-full bg-red-500 px-2.5 py-1 text-xs font-semibold text-white">{labels.newLesson}</span>}
+            {hasLessonUpdate && <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white">{labels.lessonUpdate}</span>}
+          </div>
+        )}
       </div>
 
       <div className="mt-2">

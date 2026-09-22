@@ -10,8 +10,10 @@ interface CoursesProps {
             title: string;
             categoryId: string;
             imageUrl: string;
-            chapter: string[]
+            chapter: { _id: string; updatedAt?: string; createdAt?: string }[]
             price: number;
+            updatedAt?: string;
+            createdAt?: string;
         }
         category: [
             {
@@ -19,13 +21,13 @@ interface CoursesProps {
                 _id: string;
             }
         ]
-        chapter: [
-            {
-                _id: number;
-                courseId: number;
-                isFree: boolean;
-            }
-        ]
+        chapter: {
+            _id: number;
+            courseId: number;
+            isFree: boolean;
+            updatedAt?: string;
+            createdAt?: string;
+        }[]
     }[];
 
     publishedChapterIds: {
@@ -50,7 +52,6 @@ export const CoursesList = ({items,publishedChapterIds,validCompletedChapters,pu
     return c.chapter
  })
 
- const chapters = chapter.map(c => c[0])
  const categories = category.map(c => c[0])
 
 
@@ -61,8 +62,9 @@ export const CoursesList = ({items,publishedChapterIds,validCompletedChapters,pu
             <CoursesCard 
             category={categories.filter(c => c?._id === course.categoryId)[0]}
             key={course?._id}
-            chapters={chapters.filter(c => c.courseId === course._id)[0]}
+            chapters={items.find((item) => item.course._id === course._id)?.chapter[0]}
             purchase={purchase.filter(p => p.courseId === course._id)[0]}
+            chaptersForCourse={items.find((item) => item.course._id === course._id)?.chapter || []}
             validCompletedChapters={validCompletedChapters.filter((c: {courseId: number}) => c.courseId === course._id)}
             {...course }
             labels={labels}

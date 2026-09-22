@@ -17,7 +17,7 @@ const CoursesPage = async () => {
   }
 
   await mongooseConnect();
-  const course = await Course.find(await courseOwnerFilter(userId)).sort({createdAt: -1})
+  const course = await Course.find(await courseOwnerFilter(userId)).sort({ position: 1, createdAt: -1 })
   const courses = JSON.parse(JSON.stringify(course))
   return (
     <>

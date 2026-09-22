@@ -26,7 +26,7 @@ export const NavbarRoutes = () => {
         <SearchInput />
       </div>
     )}
-    <div className='flex gap-x-2 ml-auto'>
+    <div className='flex items-center gap-x-2 ml-auto'>
         {isTeacherPage || isPlayerPage ? (
           <Link href="/">
            <Button size="sm" variant="ghost">
@@ -41,6 +41,11 @@ export const NavbarRoutes = () => {
             </Link>
         ) : null
     }
+        {user && (
+          <span className="max-w-[42vw] truncate text-xs font-medium text-slate-700 sm:max-w-none sm:text-sm">
+            {user.fullName || user.username || user.primaryEmailAddress?.emailAddress}
+          </span>
+        )}
         <UserButton afterSignOutUrl='/'/>
        
         </div>

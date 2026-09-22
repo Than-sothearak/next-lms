@@ -19,6 +19,8 @@ interface CourseSidebarProps {
     title: string;
     courseId: string;
     isFree: boolean;
+    updatedAt?: string;
+    createdAt?: string;
   }[];
 
   progressCount: number;
@@ -69,6 +71,10 @@ export const CourseSidebar = async ({
             isCompleted={!!userProgress?.filter((c: {chapterId: string}) => c.chapterId === chapter._id)[0]?.isCompleted}
             courseId={course._id}
             isLocked={!chapter.isFree && !purchase}
+            updatedAt={chapter.updatedAt}
+            createdAt={chapter.createdAt}
+            newLabel={labels.newLesson}
+            updatedLabel={labels.updated}
           />
         ))}
       </div>

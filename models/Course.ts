@@ -9,6 +9,7 @@ interface CourseProps {
   imageUrl: string;
   price: number;
   isPublished: boolean;
+  position?: number;
   categoryId: Types.ObjectId;
   attachments: Types.ObjectId[];
   chapter: Types.ObjectId[];
@@ -25,6 +26,7 @@ const CourseSchema = new Schema<CourseProps>({
     type: Boolean,
     default: false
 },
+  position: { type: Number, default: 0 },
   categoryId: {type: Schema.Types.ObjectId, ref: 'Category'},
   attachments:  [{type: Schema.Types.ObjectId, ref:'Attachment'}],
   chapter: [{type: Schema.Types.ObjectId, ref: 'Chapter'}]

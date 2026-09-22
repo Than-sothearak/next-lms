@@ -40,7 +40,7 @@ const SearchPage = async ({searchParams}: SearchPageProps) => {
 
   const categories = JSON.parse(JSON.stringify(await Category.find().sort({name: 1})))
 
-  const publishedChapters = JSON.parse(JSON.stringify(await Chapter.find({useId: userId, isPublished: true})));
+  const publishedChapters = JSON.parse(JSON.stringify(await Chapter.find({useId: userId, isPublished: true}).sort({position: 1}).select("_id courseId")));
   
   const purchase = JSON.parse(JSON.stringify(await Purchase.find({userId: userId})))
 

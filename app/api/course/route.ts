@@ -19,9 +19,11 @@ export async function POST(req: Request) {
       if (findCourse){
           return new NextResponse('Course already exists!', { status: 400 });
       } else {
+          const lastCourse = await Course.findOne({ userId }).sort({ position: -1 });
           const course = await Course.create({
               title,
               userId,
+              position: (lastCourse?.position ?? -1) + 1,
             });
             return NextResponse.json(course);
       }

@@ -23,7 +23,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import Link from "next/link"
-import { PlusCircle } from "lucide-react"
+import { Grip, PlusCircle } from "lucide-react"
+import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd"
+import axios from "axios"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -34,13 +38,20 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+    const router = useRouter()
+    const [orderedData, setOrderedData] = React.useState(data)
+    const [previousData, setPreviousData] = React.useState(data)
+    if (data !== previousData) {
+      setPreviousData(data)
+      setOrderedData(data)
+    }
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const table = useReactTable({
-    data,
+    data: orderedData,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // Show the full list so a drag can move a course to any position.
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
@@ -51,10 +62,31 @@ export function DataTable<TData, TValue>({
     },
   })
 
+  const onDragEnd = async (result: DropResult) => {
+    if (!result.destination || sorting.length || columnFilters.length) return
+    const reordered = Array.from(orderedData)
+    const [moved] = reordered.splice(result.source.index, 1)
+    reordered.splice(result.destination.index, 0, moved)
+    setOrderedData(reordered)
+    try {
+      await axios.put("/api/course/reorder", {
+        list: reordered.map((item, position) => ({
+          _id: (item as { _id: string })._id,
+          position,
+        })),
+      })
+      toast.success("Course order updated")
+      router.refresh()
+    } catch {
+      setOrderedData(data)
+      toast.error("Could not update course order")
+    }
+  }
+
   return (
     <>
     <p className="mb-4 text-sm text-muted-foreground">
-      Total courses: {data.length}
+      Total courses: {orderedData.length}
     </p>
     <div className="flex items-center justify-between mb-4">
         <Input
@@ -75,11 +107,14 @@ export function DataTable<TData, TValue>({
 
       </div>
     <div className="rounded-md border">
+      <DragDropContext onDragEnd={onDragEnd}>
+      <Droppable droppableId="courses" isDropDisabled={sorting.length > 0 || columnFilters.length > 0} direction="vertical">
+      {(provided) => <div ref={provided.innerRef} {...provided.droppableProps}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              <TableHead className="w-16">No.</TableHead>
+              <TableHead className="w-24">Position</TableHead>
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead key={header.id}>
@@ -98,12 +133,24 @@ export function DataTable<TData, TValue>({
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row, index) => (
+              <Draggable key={row.id} draggableId={(row.original as { _id: string })._id} index={index}>
+              {(dragProvided) => (
               <TableRow
                 key={row.id}
+                ref={dragProvided.innerRef}
+                {...dragProvided.draggableProps}
                 data-state={row.getIsSelected() && "selected"}
               >
-                <TableCell>
-                  {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + index + 1}
+                <TableCell className="w-24">
+                  <div
+                    {...dragProvided.dragHandleProps}
+                    className="flex w-fit cursor-grab items-center gap-2 active:cursor-grabbing"
+                    aria-label={`Drag course to reorder, position ${index + 1}`}
+                    title="Drag to reorder"
+                  >
+                    <Grip className="h-4 w-4 text-muted-foreground" />
+                    <span>{index + 1}</span>
+                  </div>
                 </TableCell>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
@@ -111,6 +158,8 @@ export function DataTable<TData, TValue>({
                   </TableCell>
                 ))}
               </TableRow>
+              )}
+              </Draggable>
             ))
           ) : (
             <TableRow>
@@ -119,27 +168,14 @@ export function DataTable<TData, TValue>({
               </TableCell>
             </TableRow>
           )}
+          {provided.placeholder}
         </TableBody>
       </Table>
+      </div>}
+      </Droppable>
+      </DragDropContext>
     </div>
-    <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div>
+    <p className="text-xs text-muted-foreground">Drag rows to change course order. Clear sorting and filters to reorder.</p>
     </>
   )
 }

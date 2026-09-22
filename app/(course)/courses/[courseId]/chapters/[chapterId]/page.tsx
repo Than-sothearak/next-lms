@@ -143,6 +143,16 @@ const ChapterPage = async ({
               </Link>
             </div>
           )}
+          {!nextChapter?._id && userProgress?.isCompleted && (
+            <div className="flex flex-wrap justify-end gap-2 p-4">
+              <Link href="/">
+                <Button type="button" variant="outline">{labels.nextCourse}</Button>
+              </Link>
+              <Link href="/search">
+                <Button type="button">{labels.backToCourse}</Button>
+              </Link>
+            </div>
+          )}
           {!!attachments.length && (
             <>
               <Separator />
