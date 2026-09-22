@@ -42,28 +42,70 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const query = url.searchParams.get("query") || undefined;
   const categoryId = url.searchParams.get("categoryId") || undefined;
+  const roleFilter = url.searchParams.get("role") || "student";
+  const yearFilter = url.searchParams.get("year") || "";
   const offset = Number(url.searchParams.get("offset") || 0);
-  const users = await (await clerkClient()).users.getUserList({ limit: 10, offset, query, orderBy: "-created_at" });
+  const client = await clerkClient();
+  const fetchAllUsers = async (search?: string) => {
+    const firstPage = await client.users.getUserList({ limit: 500, offset: 0, query: search, orderBy: "-created_at" });
+    const all = [...firstPage.data];
+    for (let pageOffset = firstPage.data.length; pageOffset < firstPage.totalCount; pageOffset += 500) {
+      const page = await client.users.getUserList({ limit: 500, offset: pageOffset, query: search, orderBy: "-created_at" });
+      all.push(...page.data);
+    }
+    return all;
+  };
+  const [allUsers, matchedUsers] = await Promise.all([
+    fetchAllUsers(),
+    query ? fetchAllUsers(query) : Promise.resolve(null),
+  ]);
+  const counts = allUsers.reduce((result, user) => {
+    const role = user.publicMetadata?.role === "admin" || user.publicMetadata?.role === "teacher"
+      ? user.publicMetadata.role
+      : "student";
+    result[role] += 1;
+    result.total += 1;
+    return result;
+  }, { student: 0, teacher: 0, admin: 0, total: 0 });
+  const sourceUsers = matchedUsers ?? allUsers;
+  const filteredUsers = sourceUsers.filter((user) => {
+    const role = user.publicMetadata?.role || "student";
+    const matchesRole = roleFilter === "all" || role === roleFilter;
+    const matchesYear = !yearFilter || new Date(user.createdAt).getFullYear() === Number(yearFilter);
+    return matchesRole && matchesYear;
+  });
+  const years = Array.from(new Set(allUsers.map((user) => new Date(user.createdAt).getFullYear()).filter(Number.isFinite))).sort((a, b) => b - a);
+  const pageUsers = filteredUsers.slice(offset, offset + 10);
   await mongooseConnect();
-  const publishedChapterCount = await Chapter.countDocuments({ isPublished: true });
+  const allPublicCourses = await Course.find({ isPublished: true }, { _id: 1, title: 1, categoryId: 1 }).lean();
   const courses = await Course.find({ isPublished: true, ...(categoryId ? { categoryId } : {}) }, { _id: 1, title: 1, categoryId: 1 }).lean();
   const categories = await Category.find({}, { _id: 1, name: 1 }).lean();
-  const results = await Promise.all(users.data.map(async (user) => {
-    const completed = publishedChapterCount === 0 ? 0 : await UserProgress.countDocuments({ userId: user.id, isCompleted: true });
-    const courseProgress = await Promise.all(courses.map(async (course) => {
-      const courseChapterCount = await Chapter.countDocuments({ courseId: course._id, isPublished: true });
-      const courseCompleted = await UserProgress.countDocuments({ userId: user.id, courseId: course._id, isCompleted: true });
+  const results = await Promise.all(pageUsers.map(async (user) => {
+    const allCourseProgress = await Promise.all(allPublicCourses.map(async (course) => {
+      const courseChapterIds = await Chapter.distinct("_id", { courseId: course._id, isPublished: true });
+      const courseCompletedIds = await UserProgress.distinct("chapterId", {
+        userId: user.id,
+        isCompleted: true,
+        chapterId: { $in: courseChapterIds },
+      });
       const category = categories.find((item) => String(item._id) === String(course.categoryId));
-      return { id: String(course._id), title: course.title, category: category?.name || "Uncategorized", progress: courseChapterCount ? Math.min(100, Math.round((courseCompleted / courseChapterCount) * 100)) : 0 };
+      return { id: String(course._id), title: course.title, category: category?.name || "Uncategorized", progress: courseChapterIds.length ? Math.min(100, Math.round((courseCompletedIds.length / courseChapterIds.length) * 100)) : 0 };
     }));
+    const completedCourses = allCourseProgress.filter((course) => course.progress === 100).length;
+    const progress = allPublicCourses.length ? Math.round((completedCourses / allPublicCourses.length) * 100) : 0;
+    const visibleCourseIds = new Set(courses.map((course) => String(course._id)));
+    const courseProgress = allCourseProgress.filter((course) => visibleCourseIds.has(course.id));
     return {
     id: user.id,
     username: user.username,
     email: user.emailAddresses[0]?.emailAddress || "",
+    createdAt: user.createdAt,
     role: user.publicMetadata?.role || "student",
-    progress: Math.min(100, Math.round((completed / publishedChapterCount) * 100)),
+    progress,
+    completedCourses,
+    totalCourses: allPublicCourses.length,
     courseProgress,
     };
   }));
-  return NextResponse.json({ users: results, categories });
+  return NextResponse.json({ users: results, categories, counts, years, totalFiltered: filteredUsers.length });
 }

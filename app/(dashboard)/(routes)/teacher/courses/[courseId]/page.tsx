@@ -3,7 +3,7 @@ import { mongooseConnect } from "@/lib/mongoose";
 import { Course } from "@/models/Course";
 import { auth } from "@clerk/nextjs/server";
 import {
-  CircleDollarSign,
+  // CircleDollarSign,
   File,
   LayoutDashboard,
   ListChecks,
@@ -14,7 +14,7 @@ import { DesciptionForm } from "./_components/description-from";
 import { ImageForm } from "./_components/image-form";
 import { Category } from "@/models/Course";
 import { CategoryForm } from "./_components/category-from";
-import { PriceForm } from "./_components/price-from";
+// import { PriceForm } from "./_components/price-from";
 import { AttactmentForm } from "./_components/attactment-form";
 import { Attachment } from "@/models/Attachment";
 import { ChapterForm } from "./chapters/[chapterId]/_components/chapter-form";
@@ -51,7 +51,6 @@ const CourseIdPage = async ({ params }: { params: Promise<{ courseId: string }> 
     course.title,
     course.description,
     course.imageUrl,
-    course.price,
     course.categoryId,
     getChapters.some(chapter => chapter.isPublished)
   ];
@@ -121,6 +120,7 @@ const CourseIdPage = async ({ params }: { params: Promise<{ courseId: string }> 
               courseId={course._id} />
             </div>
           </div>
+          {/* Price setting is paused; restore this section when course pricing is needed.
           <div>
             <div className="flex items-center gap-x-2">
               <IconBadge icon={CircleDollarSign} />
@@ -128,7 +128,7 @@ const CourseIdPage = async ({ params }: { params: Promise<{ courseId: string }> 
             </div>
             <PriceForm initialData={course} courseId={course._id} />
           </div>
-
+          */}
           <div>
             <div className="flex items-center gap-x-2">
               <IconBadge icon={File} />

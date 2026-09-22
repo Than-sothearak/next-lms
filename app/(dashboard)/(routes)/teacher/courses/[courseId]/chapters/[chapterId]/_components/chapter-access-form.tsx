@@ -8,20 +8,11 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Textarea } from "@/components/ui/textarea";
-import { Editor } from "@/components/editor";
-import { Preview } from "@/components/preview";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
@@ -30,7 +21,7 @@ const formSchema = z.object({
 
 interface ChapterAccessFormProps {
   initialData: {
-    isFree: string;
+    isFree: boolean;
   };
   courseId: string;
   chapterId: string;
@@ -55,6 +46,7 @@ export const ChapterAccessForm = ({
   });
 
   const { isSubmitting, isValid } = form.formState;
+  const isFree = form.watch("isFree");
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -104,27 +96,13 @@ export const ChapterAccessForm = ({
       {isEidting && (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-            <FormField
-              control={form.control}
-              name="isFree"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormDescription>
-                      Check this box to make this chpater is free
-                    </FormDescription>
-                  </div>
-                
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <label className="flex flex-row items-start gap-3 rounded-md border p-4">
+              <Checkbox
+                checked={isFree}
+                onCheckedChange={(checked) => form.setValue("isFree", checked === true, { shouldValidate: true })}
+              />
+              <span className="text-sm leading-none">Check this box to make this chapter free</span>
+            </label>
             <div className="flex gap-x-2">
               <LoadingButton type="submit" loading={isSubmitting} loadingText="Saving..." disabled={!isValid}>
                 Save
