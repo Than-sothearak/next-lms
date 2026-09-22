@@ -14,9 +14,9 @@ export const NavbarRoutes = () => {
     const pathname = usePathname();
 
     const isTeacherPage = pathname?.startsWith("/teacher");
+    const isAdminPage = pathname === "/admin" || pathname?.startsWith("/admin/");
     const isPlayerPage = pathname?.startsWith("/chapter");
     const isSearchPage = pathname === "/search";
-    const studentPage = pathname?.startsWith("/teacher");
     const role = user?.publicMetadata?.role;
     const canTeach = role === "admin" || role === "teacher";
   return (
@@ -27,13 +27,13 @@ export const NavbarRoutes = () => {
       </div>
     )}
     <div className='flex items-center gap-x-2 ml-auto'>
-        {isTeacherPage || isPlayerPage ? (
+        {isTeacherPage || isAdminPage || isPlayerPage ? (
           <Link href="/">
            <Button size="sm" variant="ghost">
              <LogOut className='h-4 w-4 mr-2' />
              Exit
            </Button></Link>
-        ): canTeach ? (
+        ): canTeach && !isAdminPage ? (
             <Link href="/teacher/courses">
                 <Button size="sm" variant="ghost">
                     Teacher mode

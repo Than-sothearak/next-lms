@@ -1,6 +1,6 @@
 "use client";
 
-import { useSignIn } from "@clerk/nextjs";
+import { useAuth, useSignIn } from "@clerk/nextjs";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -20,6 +20,7 @@ declare global {
 }
 
 export default function TelegramSignInPage() {
+  const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
   const { isLoaded, signIn, setActive } = useSignIn();
   const router = useRouter();
   const started = useRef(false);
@@ -72,10 +73,16 @@ export default function TelegramSignInPage() {
   }, [isChecking, isLoaded, router, setActive, signIn]);
 
   useEffect(() => {
-    if (!isLoaded || !isTelegramScriptReady || started.current) return;
+    if (!isAuthLoaded || !isLoaded || !isTelegramScriptReady || started.current) return;
+    if (isSignedIn) {
+      router.replace("/search");
+      return;
+    }
+
     started.current = true;
-    void checkApprovalAndSignIn();
-  }, [checkApprovalAndSignIn, isLoaded, isTelegramScriptReady]);
+    const timer = window.setTimeout(() => void checkApprovalAndSignIn(), 0);
+    return () => window.clearTimeout(timer);
+  }, [checkApprovalAndSignIn, isAuthLoaded, isLoaded, isSignedIn, isTelegramScriptReady, router]);
 
   useEffect(() => {
     if (!isPending) return;

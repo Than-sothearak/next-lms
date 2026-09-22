@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -21,25 +22,35 @@ type Entry = {
 
 export function TelegramAllowlist() {
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [telegramId, setTelegramId] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
-  const [isSaving, setIsSaving] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"pending" | "approved" | "disabled">("pending");
+  const requestId = useRef(0);
+  const savingIds = useRef(new Set<string>());
+  const [pendingIds, setPendingIds] = useState(new Set<string>());
 
   const loadEntries = useCallback(async (query = search, currentPage = page) => {
-    const params = new URLSearchParams({ query, offset: String(currentPage * 10) });
+    const currentRequest = ++requestId.current;
+    const params = new URLSearchParams({ query, status: statusFilter, offset: String(currentPage * 10) });
     const response = await fetch(`/api/admin/telegram-allowlist?${params}`, { cache: "no-store" });
     if (!response.ok) return;
     const data = await response.json();
+    if (currentRequest !== requestId.current) return;
+    if (currentPage > 0 && currentPage * 10 >= data.total) {
+      setPage(Math.max(0, Math.ceil(data.total / 10) - 1));
+      return;
+    }
     setEntries(data.entries);
     setTotal(data.total);
-  }, [search, page]);
+  }, [search, page, statusFilter]);
 
   useEffect(() => {
+    // State is updated after the asynchronous fetch completes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadEntries();
     const timer = window.setInterval(() => void loadEntries(), 10_000);
-    return () => window.clearInterval(timer);
+    return () => { window.clearInterval(timer); requestId.current += 1; };
   }, [loadEntries]);
 
   function submitSearch(event: FormEvent) {
@@ -48,70 +59,59 @@ export function TelegramAllowlist() {
     void loadEntries(search, 0);
   }
 
-  async function addEntry(event: FormEvent) {
-    event.preventDefault();
-    setIsSaving(true);
-    try {
-      const response = await fetch("/api/admin/telegram-allowlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telegramId: telegramId.trim() }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Unable to approve account");
-      setTelegramId("");
-      toast.success("Telegram account approved");
-      await loadEntries(search, page);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to approve account");
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
   async function setStatus(entry: Entry, status: "approved" | "disabled") {
-    const response = await fetch(`/api/admin/telegram-allowlist/${entry._id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    if (!response.ok) {
+    if (savingIds.current.has(entry._id)) return;
+    savingIds.current.add(entry._id);
+    setPendingIds(new Set(savingIds.current));
+    const currentRequest = requestId.current;
+    try {
+      const response = await fetch(`/api/admin/telegram-allowlist/${entry._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error("Unable to update approval");
+      toast.success(status === "approved" ? "Telegram access approved" : "Telegram access disabled");
+      if (currentRequest === requestId.current) await loadEntries(search, page);
+    } catch {
       toast.error("Unable to update approval");
-      return;
+    } finally {
+      savingIds.current.delete(entry._id);
+      setPendingIds(new Set(savingIds.current));
     }
-    toast.success(status === "approved" ? "Telegram access approved" : "Telegram access disabled");
-    await loadEntries(search, page);
   }
 
   return (
     <section className="space-y-4 rounded-xl border bg-white p-5 shadow-sm">
       <div>
         <h2 className="text-lg font-semibold">Telegram Mini App access</h2>
-        <p className="mt-1 text-sm text-slate-500">Verified Telegram sign-in requests appear here. Approve a request to let that user sign in as a student.</p>
+        <p className="mt-1 text-sm text-slate-500">Approve pending requests, disable approved accounts, or reapprove disabled accounts.</p>
       </div>
-      <form onSubmit={addEntry} className="flex max-w-lg gap-2">
-        <Input
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={telegramId}
-          onChange={(event) => setTelegramId(event.target.value)}
-          placeholder="Telegram numeric user ID"
-          aria-label="Telegram numeric user ID"
-          required
-        />
-        <Button type="submit" disabled={isSaving}>{isSaving ? "Approving…" : "Approve ID"}</Button>
-      </form>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter Telegram accounts by status">
+        {(["pending", "approved", "disabled"] as const).map((status) => (
+          <Button key={status} type="button" variant={statusFilter === status ? "default" : "outline"} aria-pressed={statusFilter === status} onClick={() => {
+            if (status === statusFilter) return;
+            requestId.current += 1;
+            setStatusFilter(status);
+            setPage(0);
+            setEntries([]);
+            setTotal(0);
+          }}>
+            {status === "pending" ? "Pending" : status === "approved" ? "Approved" : "Disabled"}
+          </Button>
+        ))}
+      </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <form onSubmit={submitSearch} className="flex max-w-md flex-1 gap-2">
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by name or Telegram ID"
-            aria-label="Search pending Telegram requests by name or ID"
+            aria-label="Search Telegram accounts by name or ID"
           />
           <Button type="submit" variant="outline">Search</Button>
         </form>
-        <p className="text-sm text-slate-500">{total} pending request{total === 1 ? "" : "s"}</p>
+        <p className="text-sm text-slate-500">{total} {statusFilter} account{total === 1 ? "" : "s"}</p>
       </div>
       <div className="divide-y rounded-md border">
         {entries.map((entry) => (
@@ -147,13 +147,25 @@ export function TelegramAllowlist() {
               <span className={`rounded-full px-2 py-1 text-xs font-medium ${(entry.status ?? "pending") === "pending" ? "bg-amber-100 text-amber-800" : entry.status === "disabled" ? "bg-slate-100 text-slate-600" : "bg-emerald-100 text-emerald-800"}`}>
                 {entry.status ?? "pending"}
               </span>
-              {(entry.status ?? "pending") === "pending" && <Button type="button" size="sm" onClick={() => setStatus(entry, "approved")}>Approve</Button>}
-              {entry.status === "approved" && <Button type="button" size="sm" variant="outline" onClick={() => setStatus(entry, "disabled")}>Disable</Button>}
-              {entry.status === "disabled" && <Button type="button" size="sm" onClick={() => setStatus(entry, "approved")}>Reapprove</Button>}
+              <Button
+                type="button"
+                size="sm"
+                variant={entry.status === "approved" ? "outline" : "default"}
+                disabled={pendingIds.has(entry._id)}
+                aria-busy={pendingIds.has(entry._id)}
+                onClick={() => setStatus(entry, entry.status === "approved" ? "disabled" : "approved")}
+              >
+                {pendingIds.has(entry._id) && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+                {entry.status === "approved"
+                  ? pendingIds.has(entry._id) ? "Disabling…" : "Disable"
+                  : entry.status === "disabled"
+                    ? pendingIds.has(entry._id) ? "Reapproving…" : "Reapprove"
+                    : pendingIds.has(entry._id) ? "Approving…" : "Approve"}
+              </Button>
             </div>
           </div>
         ))}
-        {!entries.length && <p className="px-4 py-6 text-center text-sm text-slate-500">{search ? "No pending requests match this search." : "No Telegram requests are waiting for approval."}</p>}
+        {!entries.length && <p className="px-4 py-6 text-center text-sm text-slate-500">{search ? `No ${statusFilter} accounts match this search.` : `No ${statusFilter} Telegram accounts.`}</p>}
       </div>
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">Page {page + 1} · {total} matching requests</p>

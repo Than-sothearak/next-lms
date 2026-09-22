@@ -2,6 +2,11 @@ export type StudentLanguage = "en" | "km";
 
 export const studentTranslations = {
   en: {
+    publishedCourses: "Published courses",
+    enrolledCourses: "Enrolled courses",
+    needToEnroll: "Need to enroll",
+    overallCompletion: "Overall completion",
+    completedPublishedCourses: "Published courses completed",
     home: "Home",
     back: "Back",
     courseProgress: "Course progress",
@@ -42,6 +47,11 @@ export const studentTranslations = {
     khmer: "ខ្មែរ",
   },
   km: {
+    publishedCourses: "វគ្គសិក្សាទាំងអស់ដែលត្រូវរៀន",
+    enrolledCourses: "វគ្គសិក្សាដែលបានចូលរៀន",
+    needToEnroll: "វគ្គសិក្សានៅសល់ត្រូវចូលរៀន",
+    overallCompletion: "ការបញ្ចប់សរុប",
+    completedPublishedCourses: "វគ្គសិក្សាទាំងអស់ និងបានបញ្ចប់",
     home: "ទំព័រដើម",
     back: "ត្រឡប់ក្រោយ",
     courseProgress: "វឌ្ឍនភាពវគ្គសិក្សា",

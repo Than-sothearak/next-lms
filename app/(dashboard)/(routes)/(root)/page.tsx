@@ -5,7 +5,8 @@ import { Purchase } from "@/models/Purchase";
 import { UserProgress } from "@/models/UserProgress";
 import { auth } from "@clerk/nextjs/server";
 import { InfoCard } from "./_components/info-card";
-import { CheckCircle, Clock } from "lucide-react";
+import { BookOpen, CheckCircle, Clock, ListPlus, Library } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { CoursesList } from "../search/_components/courses-list";
 import { getProgress } from "@/actions/get-progress";
 import { cookies } from "next/headers";
@@ -26,6 +27,8 @@ export default async function Dashboard() {
   }, { courseId: 1})
   
   const PurchasedCourses = JSON.parse(JSON.stringify(await Course.find({_id: { $in: findPurchasedCourses.map(c => c.courseId)}, isPublished: true })))
+  const totalPublishedCourses = await Course.countDocuments({ isPublished: true });
+  const coursesToEnroll = Math.max(0, totalPublishedCourses - PurchasedCourses.length);
 
   const fullCourses = []
         for (let course of PurchasedCourses) {
@@ -50,11 +53,36 @@ export default async function Dashboard() {
 
   const completedCourses = PurchasedCourses.filter((course:{progress: number}) => course.progress === 100);
   const coursesInProgress = PurchasedCourses.filter((course:{progress: number}) => (course.progress ?? 0) < 100);
+  const overallProgress = totalPublishedCourses
+    ? Math.round((completedCourses.length / totalPublishedCourses) * 100)
+    : 0;
  
   return (
 
     <div className="p-6 space-y-4">
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+
+     <InfoCard
+        icon={Library}
+        label={labels.publishedCourses}
+        courseLabel={labels.course}
+        coursesLabel={labels.courses}
+        numberOfItems={totalPublishedCourses}
+     />
+     <InfoCard
+        icon={BookOpen}
+        label={labels.enrolledCourses}
+        courseLabel={labels.course}
+        coursesLabel={labels.courses}
+        numberOfItems={PurchasedCourses.length}
+     />
+     <InfoCard
+        icon={ListPlus}
+        label={labels.needToEnroll}
+        courseLabel={labels.course}
+        coursesLabel={labels.courses}
+        numberOfItems={coursesToEnroll}
+     />
 
      <InfoCard
         icon={Clock}
@@ -71,6 +99,16 @@ export default async function Dashboard() {
         numberOfItems={completedCourses?.length}
         variant="success"
      />
+    </div>
+    <div className="space-y-3 rounded-md border p-4">
+      <div className="flex items-center justify-between gap-4 font-medium">
+        <h2>{labels.overallCompletion}</h2>
+        <span>{overallProgress}%</span>
+      </div>
+      <Progress value={overallProgress} variant="success" className="h-2" aria-label={labels.overallCompletion} />
+      <p className="text-sm text-gray-500">
+        {labels.completedPublishedCourses}: {completedCourses.length} / {totalPublishedCourses}
+      </p>
     </div>
     <CoursesList
       items={fullCourses}

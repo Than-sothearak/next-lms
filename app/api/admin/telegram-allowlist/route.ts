@@ -15,14 +15,18 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get("query") || "").trim().slice(0, 100);
   const offset = Math.max(0, Number.parseInt(searchParams.get("offset") || "0", 10) || 0);
-  const pendingFilter = {
+  const status = searchParams.get("status") || "pending";
+  if (!["pending", "approved", "disabled"].includes(status)) {
+    return NextResponse.json({ error: "Invalid status filter" }, { status: 400 });
+  }
+  const statusFilter = status === "pending" ? {
     $or: [{ status: "pending" }, { status: { $exists: false } }],
-  };
+  } : { status };
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const filter = query
     ? {
         $and: [
-          pendingFilter,
+          statusFilter,
           { $or: [
             { firstName: { $regex: escapedQuery, $options: "i" } },
             { lastName: { $regex: escapedQuery, $options: "i" } },
@@ -31,7 +35,7 @@ export async function GET(request: Request) {
           ] },
         ],
       }
-    : pendingFilter;
+    : statusFilter;
   const [entries, total] = await Promise.all([
     TelegramAllowlist.find(filter).sort({ createdAt: -1 }).skip(offset).limit(10).lean(),
     TelegramAllowlist.countDocuments(filter),
