@@ -10,11 +10,13 @@ import { CoursesList } from "../search/_components/courses-list";
 import { getProgress } from "@/actions/get-progress";
 import { cookies } from "next/headers";
 import { getStudentLanguage, getStudentTranslations } from "@/lib/student-translations";
+import { TelegramRootGate } from "./_components/telegram-root-gate";
 
 export default async function Dashboard() {
-  await mongooseConnect();
-
   const {userId} = await auth();
+  if (!userId) return <TelegramRootGate />;
+
+  await mongooseConnect();
   const language = getStudentLanguage((await cookies()).get("student-language")?.value);
   const labels = getStudentTranslations(language);
 

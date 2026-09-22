@@ -78,6 +78,11 @@ NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
 
+# Telegram Mini App sign-in
+TELEGRAM_BOT_TOKEN=
+
+Set the Telegram Mini App URL to `https://your-domain/telegram-sign-in`. When a Telegram user opens the Mini App, their verified identity appears as a pending request under Admin > Users. Approve the request there; the user can then tap the approval check button in the Mini App to sign in. Telegram init data expires after five minutes, so users may need to reopen the Mini App if approval takes longer.
+
 # Stripe
 STRIPE_API_KEY=
 STRIPE_WEBHOOK_SECRET=
