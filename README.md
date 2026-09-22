@@ -99,3 +99,22 @@ AWS_BUCKET_NAME=
 
 # UploadThing
 UPLOADTHING_TOKEN=
+
+Video files are uploaded directly from the browser to S3 using a short-lived
+presigned URL, so the video bytes do not pass through the Vercel function.
+Configure the S3 bucket CORS policy with your deployed application origin:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://your-domain.com", "http://localhost:3000"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3000
+  }
+]
+```
+
+Do not add `x-amz-acl` to the browser request headers. The presigned URL
+already contains the signed `x-amz-acl=public-read` parameter.

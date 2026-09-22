@@ -3,7 +3,7 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import axios, { toFormData } from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -52,7 +52,8 @@ export const ChapterForm = ({ initialData, courseId, chapters }: ChapterFormProp
     },
   });
 
-  const { isSubmitting, isValid } = form.formState;
+  const { isSubmitting } = form.formState;
+  const title = useWatch({ control: form.control, name: "title" }) || "";
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -118,7 +119,12 @@ export const ChapterForm = ({ initialData, courseId, chapters }: ChapterFormProp
               )}
             />
             <div className="flex gap-x-2">
-              <LoadingButton type="submit" loading={isSubmitting} loadingText="Creating..." disabled={!isValid}>
+              <LoadingButton
+                type="submit"
+                loading={isSubmitting}
+                loadingText="Creating..."
+                disabled={isSubmitting || !title.trim()}
+              >
                 Create
               </LoadingButton>
             </div>

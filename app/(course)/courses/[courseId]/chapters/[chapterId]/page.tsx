@@ -99,6 +99,7 @@ const ChapterPage = async ({
             chapterId={(await params).chapterId}
             title={chapter.title}
             url={chapter.videoUrl}
+            imageUrl={chapter.imageUrl}
             courseId={(await params).courseId}
             nextChapterId={nextChapter?._id}
             isLocked={isLocked}

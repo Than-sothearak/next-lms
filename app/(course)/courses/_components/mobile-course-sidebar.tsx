@@ -37,7 +37,7 @@ export const CourseMobileSidebar = ({
       <SheetTrigger className="md:hidden pr-4 hover:opacity-75 transition">
         <Menu />
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 bg-white w-72">
+      <SheetContent side="left" className="w-[90vw] max-w-none bg-white p-0">
         <CourseSidebar
           course={course}
           chapters={chapters}

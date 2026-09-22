@@ -4,7 +4,7 @@ import axios from "axios";
 import { SyntheticEvent, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { Loader2, Lock, Maximize, Minimize, Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { Headphones, Loader2, Lock, Maximize, Minimize, Pause, Play, Volume2, VolumeX } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useConfettiStore } from "@/hooks/use-confetti-store";
@@ -20,6 +20,7 @@ interface VideoPlayerProps {
   isCompleted: boolean;
   title: string;
   url: string
+  imageUrl?: string;
   labels: StudentTranslations;
 };
 
@@ -33,6 +34,7 @@ export const VideoPlayer = ({
   isCompleted,
   title,
   url,
+  imageUrl,
   labels,
 }: VideoPlayerProps) => {
   const [isReady, setIsReady] = useState(false);
@@ -47,7 +49,8 @@ export const VideoPlayer = ({
   const confetti = useConfettiStore();
   const maxWatchedTime = useRef(0);
   const hasAdvanced = useRef(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | HTMLAudioElement>(null);
+  const isAudio = /\.(mp3|wav|ogg|m4a|aac|flac)(?:[?#]|$)/i.test(url);
   const storageKey = `course-video-progress:${courseId}:${chapterId}`;
   const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
   const [hasCompletedLocally, setHasCompletedLocally] = useState(false);
@@ -67,7 +70,7 @@ export const VideoPlayer = ({
     setHasLoadedProgress(true);
   }, [isCompleted, storageKey]);
 
-  const onTimeUpdate = (event: SyntheticEvent<HTMLVideoElement>) => {
+  const onTimeUpdate = (event: SyntheticEvent<HTMLMediaElement>) => {
     setCurrentTime(event.currentTarget.currentTime);
     if (!canSeek) {
       maxWatchedTime.current = Math.max(maxWatchedTime.current, event.currentTarget.currentTime);
@@ -75,14 +78,14 @@ export const VideoPlayer = ({
     }
   };
 
-  const onSeeking = (event: SyntheticEvent<HTMLVideoElement>) => {
+  const onSeeking = (event: SyntheticEvent<HTMLMediaElement>) => {
     const video = event.currentTarget;
     if (!canSeek && video.currentTime > maxWatchedTime.current + 0.5) {
       video.currentTime = maxWatchedTime.current;
     }
   };
 
-  const onLoadedMetadata = (event: SyntheticEvent<HTMLVideoElement>) => {
+  const onLoadedMetadata = (event: SyntheticEvent<HTMLMediaElement>) => {
     setIsReady(true);
     setDuration(event.currentTarget.duration || 0);
     if (!canSeek && event.currentTarget.currentTime > maxWatchedTime.current + 0.5) {
@@ -189,7 +192,7 @@ export const VideoPlayer = ({
   };
 
   const onEnd = async () => {
-    if (hasAdvanced.current) return;
+    if (hasAdvanced.current || isCompleted || hasCompletedLocally) return;
     hasAdvanced.current = true;
     try {
       if (completeOnEnd) {
@@ -235,29 +238,82 @@ export const VideoPlayer = ({
         </div>
       )}
       {!isLocked && hasLoadedProgress && (
-         <video
-         ref={videoRef}
-         onLoadedMetadata={onLoadedMetadata}
-         onCanPlay={() => setIsReady(true)}
-         onEnded={onEnd}
-         onTimeUpdate={onTimeUpdate}
-         onSeeking={onSeeking}
-         src={url}
-         preload="metadata"
-         onPlay={(event) => {
-           setIsPlaying(true);
-           if (!canSeek && event.currentTarget.currentTime > maxWatchedTime.current + 0.5) {
-             event.currentTarget.currentTime = maxWatchedTime.current;
-           }
-         }}
-         onPause={() => setIsPlaying(false)}
-         onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
-         onVolumeChange={(event) => {
-           setIsMuted(event.currentTarget.muted);
-         }}
-         onClick={togglePlayback}
-         className="h-full w-full bg-black object-contain"
-       />
+         isAudio ? (
+           <div className="flex h-full w-full overflow-hidden bg-slate-950 text-white">
+             {imageUrl ? (
+               <>
+                 <div className="relative flex min-w-0 flex-1 items-center justify-center">
+                   <img src={imageUrl} alt="" className="h-full w-full object-contain" />
+                 </div>
+                 <div className="flex w-[38%] min-w-[150px] flex-col items-center justify-center gap-3 border-l border-white/20 bg-slate-900/90 p-4 text-center sm:w-[32%] sm:min-w-[220px] sm:gap-4 sm:p-6">
+                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/20 sm:h-14 sm:w-14">
+                     <Headphones className="h-5 w-5 text-blue-200 sm:h-7 sm:w-7" />
+                   </div>
+                   <h2 className="line-clamp-3 break-words text-sm font-semibold sm:text-base">
+                     {title || "Audio lesson"}
+                   </h2>
+                 </div>
+               </>
+             ) : (
+               <div className="flex w-full flex-col items-center justify-center gap-4 p-6 text-center">
+                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-500/20">
+                   <Headphones className="h-10 w-10 text-blue-200" />
+                 </div>
+                 <h2 className="max-w-[80%] break-words text-lg font-semibold">
+                   {title || "Audio lesson"}
+                 </h2>
+               </div>
+             )}
+             <audio
+               ref={(element) => {
+                 videoRef.current = element;
+               }}
+               onLoadedMetadata={onLoadedMetadata}
+               onCanPlay={() => setIsReady(true)}
+               onEnded={onEnd}
+               onTimeUpdate={onTimeUpdate}
+               onSeeking={onSeeking}
+               src={url}
+               preload="metadata"
+               onPlay={(event) => {
+                 setIsPlaying(true);
+                 if (!canSeek && event.currentTarget.currentTime > maxWatchedTime.current + 0.5) {
+                   event.currentTarget.currentTime = maxWatchedTime.current;
+                 }
+               }}
+               onPause={() => setIsPlaying(false)}
+               onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
+               onVolumeChange={(event) => setIsMuted(event.currentTarget.muted)}
+               onClick={togglePlayback}
+               className="sr-only"
+             />
+           </div>
+         ) : (
+           <video
+             ref={(element) => {
+               videoRef.current = element;
+             }}
+             onLoadedMetadata={onLoadedMetadata}
+             onCanPlay={() => setIsReady(true)}
+             onEnded={onEnd}
+             onTimeUpdate={onTimeUpdate}
+             onSeeking={onSeeking}
+             src={url}
+             poster={imageUrl}
+             preload="metadata"
+             onPlay={(event) => {
+               setIsPlaying(true);
+               if (!canSeek && event.currentTarget.currentTime > maxWatchedTime.current + 0.5) {
+                 event.currentTarget.currentTime = maxWatchedTime.current;
+               }
+             }}
+             onPause={() => setIsPlaying(false)}
+             onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
+             onVolumeChange={(event) => setIsMuted(event.currentTarget.muted)}
+             onClick={togglePlayback}
+             className="h-full w-full bg-black object-contain"
+           />
+         )
       )}
       {!isLocked && isReady && hasLoadedProgress && (
         <div className={`absolute inset-x-0 bottom-0 flex items-center gap-3 bg-gradient-to-t from-black/90 to-transparent px-4 pb-3 pt-8 text-white transition-opacity duration-200 ${showControls || !isPlaying ? "opacity-100" : "pointer-events-none opacity-0"}`}>

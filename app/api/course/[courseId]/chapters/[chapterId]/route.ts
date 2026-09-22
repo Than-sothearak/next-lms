@@ -29,7 +29,7 @@ export async function PATCH(
 
       const updateChapter = await Chapter.updateOne(
         { _id: chapterId, courseId },
-        { $set: Object.fromEntries(["title", "description", "videoUrl", "isFree"].filter((key) => key in values).map((key) => [key, values[key]])) }
+        { $set: Object.fromEntries(["title", "description", "videoUrl", "imageUrl", "isFree"].filter((key) => key in values).map((key) => [key, values[key]])) }
       );
 
       return NextResponse.json(updateChapter);

@@ -4,6 +4,7 @@ interface IChapter  {
   title: string;
   description?: string;
   videoUrl?: string;
+  imageUrl?: string;
   price?: number;
   position?: number;
   isPublished: boolean;
@@ -20,6 +21,7 @@ const ChapterSchema: Schema<IChapter> = new Schema(
     title: { type: String, required: true },
     description: { type: String },
     videoUrl: { type: String },
+    imageUrl: { type: String },
     price: { type: Number },
     position: { type: Number },
     isLocked: {

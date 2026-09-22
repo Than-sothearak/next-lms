@@ -3,7 +3,7 @@ import axios from "axios";
 
 import { useRouter } from "next/navigation";
 
-import { FileCheck, Pencil, PlusCircle, TicketCheck, Video } from "lucide-react";
+import { FileCheck, Headphones, Pencil, PlusCircle, Video } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -13,13 +13,10 @@ import { LoadingButton } from "@/components/ui/loading-button";
 interface ChapterVideoProps {
   initialData: {
     videoUrl: string;
+    title: string;
   };
   courseId: string;
   chapterId: string;
-}
-
-interface Image {
-  url: string;
 }
 
 export const ChapterVideo = ({
@@ -30,31 +27,40 @@ export const ChapterVideo = ({
   const [isEidting, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<null>(null);
   const [videos, setVideos] = useState<any>("");
   const router = useRouter();
   const toggleEdit = () => {
     setIsEditing((editing) => !editing);
   };
 
-  async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function uploadMedia(file: File) {
     if (uploading || saving) return;
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const maxVideoSize = 10 * 1024 * 1024;
-    if (file.size > maxVideoSize) {
-      toast.error("Video file must be 10MB or smaller.");
-      e.target.value = "";
+    if (!file.type.startsWith("video/") && !file.type.startsWith("audio/")) {
+      toast.error("Please choose a video or audio file");
       return;
     }
     try {
       setUploading(true);
       setVideos("");
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await axios.post("/api/upload-video", formData);
-      if (!res.data.link) throw new Error("Upload did not return a URL");
-      setVideos(res.data.link);
+      const { data } = await axios.post("/api/upload-video", {
+        fileName: file.name,
+        contentType: file.type,
+        fileSize: file.size,
+      });
+
+      const uploadResponse = await fetch(data.uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
+      if (!uploadResponse.ok) {
+        throw new Error("S3 upload failed");
+      }
+
+      if (!data.link) throw new Error("Upload did not return a URL");
+      setVideos(data.link);
     } catch (error) {
       const message = axios.isAxiosError(error)
         ? error.response?.data?.error
@@ -62,6 +68,23 @@ export const ChapterVideo = ({
       toast.error(message || "Video upload failed");
     } finally {
       setUploading(false);
+    }
+  }
+
+  function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      void uploadMedia(file);
+    }
+    e.target.value = "";
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    if (uploading || saving) return;
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      void uploadMedia(file);
     }
   }
 
@@ -118,16 +141,36 @@ export const ChapterVideo = ({
           </div>
         ) : (
           <div className="relative mt-2 aspect-video overflow-hidden rounded-md bg-black">
-            <video
-              src={initialData?.videoUrl}
-              controls
-              className="h-full w-full object-contain"
-            />
+            {/\.(mp3|wav|ogg|m4a|aac|flac)(?:[?#]|$)/i.test(initialData.videoUrl) ? (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-6 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 p-6 text-white">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/10">
+                  <Headphones className="h-12 w-12 text-blue-200" />
+                </div>
+                <h2 className="text-center text-xl font-semibold">
+                  {initialData.title || "Audio lesson"}
+                </h2>
+                <audio
+                  src={initialData.videoUrl}
+                  controls
+                  className="w-full max-w-xl"
+                />
+              </div>
+            ) : (
+              <video
+                src={initialData.videoUrl}
+                controls
+                className="h-full w-full object-contain"
+              />
+            )}
           </div>
         ))}
       {isEidting && (
         <form onSubmit={handleOnSubmit}>
-          <label className="flex flex-col justify-center items-center border-4 h-60 rounded-md border-dotted cursor-pointer">
+          <label
+            className="flex flex-col justify-center items-center border-4 h-60 rounded-md border-dotted cursor-pointer"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+          >
             {videos && (
               <div className="flex gap-x-2">
                 <p>Video uploaded</p>
@@ -140,14 +183,23 @@ export const ChapterVideo = ({
                   <h2 className="text-blue-500 text-muted-foreground">Please wait a moment...</h2>
                 )}
                {!uploading && (
-                 <h2 className="text-blue-500">Choose video file here</h2>
+                 <h2 className="text-blue-500">
+                   Choose or drag a video/audio file here
+                 </h2>
                )}
               </div>
             )}
-            <input disabled={uploading || saving} className="hidden" onChange={handleOnChange} type="file" name="video" accept="video/*" />
+            <input
+              disabled={uploading || saving}
+              className="hidden"
+              onChange={handleOnChange}
+              type="file"
+              name="media"
+              accept="video/*,audio/*"
+            />
           </label>
           <div className="text-xs text-muted-foreground mt-4">
-            <p>16:0 aspect ratio recommend</p>
+            <p>Video or audio files are supported</p>
           </div>
 
           {!videos ? (

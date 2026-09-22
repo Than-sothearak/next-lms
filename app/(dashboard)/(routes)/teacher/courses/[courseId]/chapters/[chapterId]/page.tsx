@@ -21,9 +21,11 @@ import { Course } from "@/models/Course";
 import { ChapterDesciptionForm } from "./_components/chapter-description-form";
 import { ChapterAccessForm } from "./_components/chapter-access-form";
 import { ChapterVideo } from "./_components/chapter-video-form";
+import { ChapterImageForm } from "./_components/chapter-image-form";
 import { Banner } from "@/components/banner";
 import ChapterActions from "./_components/chapter-actions";
 import { courseOwnerFilter } from "@/lib/course-access";
+import { getCurrentUserRole } from "@/lib/roles";
 
 const ChapterIdPage = async ({
   params,
@@ -31,6 +33,7 @@ const ChapterIdPage = async ({
   params: Promise<{ courseId: string; chapterId: string }>;
 }) => {
   const { userId } = await auth();
+  const userRole = await getCurrentUserRole();
   const id = (await params).courseId;
   const chapterId = (await params).chapterId;
   if (!userId) redirect("/");
@@ -85,6 +88,7 @@ const ChapterIdPage = async ({
             courseId={courseId._id}
             chapterId={chapter._id}
             isPublished={chapter.isPublished}
+            isAdmin={userRole === "admin"}
           />
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-16">
@@ -100,6 +104,11 @@ const ChapterIdPage = async ({
             />
 
             <ChapterDesciptionForm
+              initialData={chapter}
+              chapterId={chapter._id}
+              courseId={courseId._id}
+            />
+            <ChapterImageForm
               initialData={chapter}
               chapterId={chapter._id}
               courseId={courseId._id}
