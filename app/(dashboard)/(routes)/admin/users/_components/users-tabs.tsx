@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Users } from "lucide-react";
+import { FaTelegramPlane } from "react-icons/fa";
 import { TelegramAllowlist } from "./telegram-allowlist";
 import { UserDataTable } from "./user-data-table";
 
@@ -21,7 +23,7 @@ export function UsersTabs() {
           onClick={() => setActiveTab("users")}
           className={`border-b-2 px-4 py-2 text-sm font-medium ${activeTab === "users" ? "border-blue-600 text-blue-700" : "border-transparent text-slate-500 hover:text-slate-800"}`}
         >
-          All users
+          <span className="inline-flex items-center gap-2"><Users className="h-4 w-4" />All users</span>
         </button>
         <button
           type="button"
@@ -32,7 +34,7 @@ export function UsersTabs() {
           onClick={() => setActiveTab("telegram")}
           className={`border-b-2 px-4 py-2 text-sm font-medium ${activeTab === "telegram" ? "border-blue-600 text-blue-700" : "border-transparent text-slate-500 hover:text-slate-800"}`}
         >
-          Telegram approvals
+          <span className="inline-flex items-center gap-2"><FaTelegramPlane className="h-4 w-4" />Telegram approvals</span>
         </button>
       </div>
       {activeTab === "users" ? (
