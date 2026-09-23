@@ -110,7 +110,12 @@ const ChapterPage = async ({
         </div>
         <div>
           <div className="p-4 flex flex-col md:flex-row items-center justify-between">
-            <h2 className="text-2xl font-semibold mb-2">{chapter.title}</h2>
+            <div className="mb-2 flex min-w-0 items-center gap-3">
+              <span className="shrink-0 rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
+                {labels.lesson} {currentChapterIndex + 1}
+              </span>
+              <h2 className="truncate text-2xl font-semibold">{chapter.title}</h2>
+            </div>
             {/* {!purchase ? (
               <CourseEnrollButton
                 courseId={(await params).courseId}

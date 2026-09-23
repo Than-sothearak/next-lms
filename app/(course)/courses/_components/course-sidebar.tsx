@@ -51,7 +51,7 @@ export const CourseSidebar = async ({
   return (
     <div className="h-full border-r flex flex-col overflow-y-auto shadow-sm">
             <Link href="/search" className="p-4">
-              <Button variant="ghost" size="sm"><Home className="mr-2 h-4 w-4" />{labels.home}</Button>
+              <Button variant="ghost" size="sm"><Home className="mr-2 h-4 w-4" />{labels.allLessons}</Button>
             </Link>
       <div className="p-8 flex flex-col border-b">
           

@@ -9,6 +9,9 @@ import { FaTelegram } from "react-icons/fa6";
 
 declare global {
   interface Window {
+    TelegramGameProxy?: {
+      receiveEvent?: (...args: unknown[]) => void;
+    };
     Telegram?: {
       WebApp?: {
         initData?: string;
@@ -28,6 +31,10 @@ export default function TelegramSignInPage() {
   const [isChecking, setIsChecking] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [message, setMessage] = useState("Connecting to Telegram…");
+
+  useEffect(() => {
+    window.TelegramGameProxy ??= { receiveEvent: () => undefined };
+  }, []);
 
   const checkApprovalAndSignIn = useCallback(async () => {
     if (!isLoaded || !signIn || isChecking) return;

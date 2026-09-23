@@ -2,7 +2,7 @@
 
 import { UserButton, useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from './ui/button';
 import { LogOut } from 'lucide-react';
 import Link from 'next/link';
@@ -10,6 +10,11 @@ import { SearchInput } from './search-input';
 
 export const NavbarRoutes = () => {
     const { user } = useUser();
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+      setIsMounted(true);
+    }, []);
 
     const pathname = usePathname();
 
@@ -46,7 +51,11 @@ export const NavbarRoutes = () => {
             {user.fullName || user.username || user.primaryEmailAddress?.emailAddress}
           </span>
         )}
-        <UserButton afterSignOutUrl='/'/>
+        {isMounted ? (
+          <UserButton afterSignOutUrl='/' />
+        ) : (
+          <div className="h-8 w-8 rounded-full bg-slate-200" aria-hidden="true" />
+        )}
        
         </div>
     </>

@@ -60,8 +60,9 @@ export const CourseSidebarItem = ({
       <div className="flex min-w-0 flex-1 items-center gap-x-2 py-4">
         <Icon
           size={22}
+          strokeWidth={2}
           className={cn(
-            "text-slate-500",
+            "h-[22px] w-[22px] shrink-0 text-slate-500",
             isActive && "text-slate-700",
             isCompleted && "text-emerald-700"
           )}

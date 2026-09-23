@@ -2,11 +2,23 @@
 
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+declare global {
+  interface Window {
+    TelegramGameProxy?: {
+      receiveEvent?: (...args: unknown[]) => void;
+    };
+  }
+}
 
 export function TelegramRootGate() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    window.TelegramGameProxy ??= { receiveEvent: () => undefined };
+  }, []);
 
   const checkTelegram = () => {
     if (window.Telegram?.WebApp?.initData) router.replace("/telegram-sign-in");
