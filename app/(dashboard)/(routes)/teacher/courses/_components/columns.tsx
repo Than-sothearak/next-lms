@@ -1,5 +1,5 @@
 "use client"
-import mongoose, { Document } from 'mongoose';
+import mongoose from 'mongoose';
 import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,9 +15,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-  interface CourseDocument extends Document {
+  interface CourseDocument {
     _id: mongoose.Types.ObjectId;
-    name: string;
+    title: string;
+    createdAt?: string;
+    isPublished: boolean;
+    lessonCount: number;
   }
 
 export const columns: ColumnDef<CourseDocument>[] = [
@@ -64,25 +67,21 @@ export const columns: ColumnDef<CourseDocument>[] = [
       },
   },
   {
-    accessorKey: "price",
+    accessorKey: "lessonCount",
     header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Price
+            Lessons
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )
       },
       cell: ({row}) => {
-        const price = parseFloat(row.getValue("price")) || 0;
-        const format = new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD"
-        }).format(price);
-        return <div>{format}</div>
+        const lessonCount = Number(row.getValue("lessonCount")) || 0;
+        return <div>{lessonCount} {lessonCount === 1 ? "lesson" : "lessons"}</div>
       }
    
   },
